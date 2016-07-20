@@ -1,0 +1,44 @@
+<html lang="en" ng-app="anguApp">
+<body>
+
+    <div class="container-fluid" ng-controller="NewJobControl">
+      <h2 class="media-heading">Jobs information mmk</h2>
+            
+        <div class="container-fluid col-md-8">
+                <form class="form-horizontal" name="newjobForm" ng-submit="SubmitNewJob()" novalidate>
+                    <div class="form-group" ng-class="{ 'has-error': newjobForm.jobname.$error.required && !newjobForm.jobname.$pristine}">
+                        <label for="name" class="col-md-2 control-label">Job name</label>
+                        <div class="col-md-6">
+                        <input type="text" class="form-control" id="jobname" name="jobname" placeholder="Enter job name" ng-model="newjob.jobname" required>
+                        <span ng-show="newjobForm.jobname.$error.required && !newjobForm.jobname.$pristine" class="help-block {display:inline}">Job name is required.</span>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-class="{ 'has-error': newjobForm.floorplan.$error.required && !newjobForm.floorplan.$pristine}">
+                        <label for="floorplan" class="col-md-2 control-label">Floor plan</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="floorplan" name="floorplan" placeholder="Enter floor plan number" ng-model="newjob.floorplan" required>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-class="{ 'has-error': newjobForm.lotnumber.$error.required && !newjobForm.lotnumber.$pristine}">
+                        <label for="lotnumber" class="col-md-2 control-label">Lot number</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="lotnumber" name="lotnumber" placeholder="Enter lot number" ng-model="newjob.lotnumber" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-offset-2 col-md-10">
+                            <button type="submit" class="btn btn-primary" ng-click="SubmitNewJob()">Submit request</button>
+                        </div>
+                    </div>
+                </form>
+        </div>
+        <div class="container-fluid col-md-4">
+              <h3>Your Current data:</h3>
+              <p>JOBNAME={{newjob.jobname}}</p>
+              <p>FLOORPLAN={{newjob.floorplan}}</p>
+              <p>LOTNUMBER={{newjob.lotnumber}}</p>
+            </div>
+    </div>
+
+</body>
+</html>

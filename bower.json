@@ -1,0 +1,26 @@
+{
+  "name": "apexbower",
+  "description": "bower for apex",
+  "main": "apexbowerfile",
+  "authors": [
+    "Team WG"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/j1gg/apexweb",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-material": "^1.0.9",
+    "angular-ui-router": "^0.3.1",
+    "angular-route": "^1.5.7",
+    "angular-xeditable": "^0.1.12",
+    "bootstrap": "^3.3.6",
+    "angular-resource": "^1.5.7"
+  }
+}

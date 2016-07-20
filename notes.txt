@@ -1,0 +1,67 @@
+http://www.restapitutorial.com/httpstatuscodes.html
+Main codes:
+
+1xx Informational.
+
+2xx Success
+200 = OK
+201 = CREATED
+202 = ACCEPTED
+204 = NO CONTENT
+
+3xx Redirection
+304 = NOT MODIFIED
+
+4xx Client Error
+400 = BAD REQUEST
+401 = UNAUTHORIZED
+403 = FORBIDDEN
+404 = NOT FOUND
+
+5xx Server Error
+500 = INTERNAL SERVER ERROR
+501 = NOT IMPLEMENTED
+504 = GATEWAY TIMEOUT
+
+
+
+
+//TODO
+
+Index routing:
+>Need to clean up and implement just as I did with jobRouter, implement all error handling!
+
+Routers:
+> req.body.XXX = req.decoded._id; // remove the ._doc piece of this variable
+> Revise permissions (verify ordinary and verify admin) per route, rather than .all()
+> Getting jobs - only spit out jobs for the appropriate company per user logged in
+
+
+Ecomonical data transfer:
+Make sure I'm getting(and sending) the minimum amount of JSON data sent from the server per request.
+example: I get a job, and am only displaying it's name/status...I don't need to have the comments populated, etc
+Furthermore when updating and it back with a PUT, I need to only be sending the updated/changed/new/added values
+That will require clientside validation/creation of a clean JSON object with jus those values
+
+
+
+Getting database entry by ID# or name
+--SaveUsers(updatedData, _id)
+	userToUpdate = users.getByID(_id)
+	angular.extend(usertoUpdate, updatedData)
+	$http.updateuser(usertoUpdate)
+--GetCompanyID(companyName) //
+
+Error handling for all apexFactory http calls in my controllers
+
+
+DoesUsernameExist: database check to see if a username (email) is already entered
+to prevent duplicate registries. Then direct to "forgot your password?"
+---> Create server route to return true or false if username exists
+---> Register.html: transform to x-editable form and implememnt the above with "onbeforesave"
+
+
+LocalStorage on browser of username and password need to be encrypted!
+
+Need to customize/stylize the tooltips so they're actually visible and readable..
+I like the bootstrap style, black bg white text with a little tail to parent element

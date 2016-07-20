@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html ng-app="anguApp">
+<body>
+
+  <h5 class="media-heading">Admin data access</h5>
+  <div class="container-fluid">
+
+
+  <md-content>
+  <md-tabs md-dynamic-height="" md-border-bottom="">
+
+      <!-- NOTIFICATIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- NOTIFICATIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- NOTIFICATIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+    <md-tab label="Notifications">
+      <div ng-controller="NotificationControl">
+      <div ng-if="notificationsLoaded == -1"><h3>{{message}}</h3></div>
+      <div ng-if="notificationsLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
+      <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>
+        <table class="table table-bordered table-hover table-condensed" ng-if="notificationsLoaded == 1">
+          <tr>
+            <th>Greetings</th>
+          </tr>
+          <tr>
+            <td>You have {{notificationCount || '0'}} notifications.</td>
+            <td>There are {{unclaimedUsers.length}} unclaimed users.</td>
+            <td>There are {{unclaimedJobs.length}} unclaimed jobs.</td>
+          </tr>
+        </table>
+      </div>
+    </md-tab>
+
+
+      <!-- JOBS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- JOBS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- JOBS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+    <md-tab label="Jobs">
+      <div ng-controller="JobControl">
+      <div ng-if="jobsLoaded == -1"><h3>{{message}}</h3></div>
+      <div ng-if="jobsLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
+      <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>
+        <table class="table table-bordered table-hover table-condensed" ng-if="jobsLoaded == 1">
+          <tr>
+            <th>JOB #</th>
+            <th>NAME</th>
+            <th>STATUS
+              <span class="pull-right glyphicon glyphicon-question-sign">
+              <md-tooltip md-direction="top">Postponed? More job information is required, please contact us.</md-tooltip></span>
+            </th>
+            <th>LOT #</th>
+            <th>PLUMBER</th>
+            <th>SUBMIT BY</th>
+            <th>ACTIONS</th>
+          </tr>
+          <tr ng-repeat="job in jobs" id={{job._id}}>
+            <td><span editable-text="job.jobNumber" e-name="jobNumber" e-form="rowform" e-required>{{job.jobNumber || 'empty'}}</span></td>
+            <td><span editable-text="job.name" e-name="name" e-form="rowform" e-required>{{job.name || 'empty' }}</span></td>
+            <td>
+              <span href="#" editable-select="job.status" e-name="status" e-form="rowform" e-required e-ng-options="stat as stat for stat in statuses">
+                {{ShowStatus(job)}}
+              </span>
+            </td>
+            <td><span editable-text="job.lot" e-name="lot" e-form="rowform" e-required>{{job.lot || 'empty' }}</span></td>
+            <td><span><a ui-sref="app.detail({_id: job.company._id})">{{job.company.name || 'empty' }}</a>
+              <md-tooltip md-direction="bottom">Go to Company</md-tooltip></span></td>
+            <td><span><a ui-sref="app.detail({_id: job.submitBy._id})">{{job.submitBy.firstname||'empty'}} {{job.submitBy.lastname||'empty'}}</a>
+              <md-tooltip md-direction="bottom">Go to User</md-tooltip></span></td>
+            <td style="white-space: nowrap">
+            <!-- form -->
+              <form editable-form name="rowform" onaftersave="SaveJob($data, job._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == job">
+                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-success">
+                  <md-tooltip md-direction="right">Save changes</md-tooltip>
+                  <span class="glyphicon glyphicon-floppy-save"</span>
+                </button>
+                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-danger">
+                  <md-tooltip md-direction="right">Cancel</md-tooltip>
+                  <span class="glyphicon glyphicon-remove-sign"</span>
+                </button>
+              </form>
+              <div class="buttons" ng-show="!rowform.$visible">
+                <button class="btn btn-primary" ng-click="rowform.$show()">
+                  <md-tooltip md-direction="right">Quick edit</md-tooltip>
+                  <span class="glyphicon glyphicon-pencil"</span>
+                </button>
+                <button class="btn btn-info">
+                  <md-tooltip md-direction="right">Full details</md-tooltip>
+                  <span ui-sref="app.detail({_id: job._id})" class="glyphicon glyphicon-zoom-in"</span>
+                </button>
+                <button class="btn btn-danger" ng-click="DeleteJob(job._id)">
+                  <md-tooltip md-direction="right">Delete</md-tooltip>
+                  <span class="glyphicon glyphicon-trash"</span>
+                </button>
+              </div>  
+            </td>
+          </tr>
+        </table>
+       
+      </div>
+    </md-tab>
+
+      <!-- USERS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- USERS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- USERS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+    <md-tab label="Users">
+      <div ng-controller="UserControl">
+      <div ng-if="usersLoaded == -1"><h3>{{message}}</h3></div>
+      <div ng-if="usersLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
+      <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>
+        <table class="table table-bordered table-hover table-condensed" ng-if="usersLoaded == 1">
+          <tr>
+            <th>USERNAME</th>
+            <th>FULL NAME</th>
+            <th>COMPANY</th>
+            <th>REGISTERED</th>
+            <th>ACTIONS</th>
+          </tr>
+          <tr class="fluid-container" ng-repeat="user in users" id={{user._id}}>
+            <td><span editable-text="user.username" e-name="name" e-form="rowform" e-required>{{ user.username || 'empty' }}</span></td>
+            <td>
+              <span placeholder="First name" editable-text="user.firstname" e-name="firstname" e-form="rowform" e-required>{{user.firstname || 'empty' }}</span>
+              <span placeholder ="Last name" editable-text="user.lastname" e-name="lastname" e-form="rowform" e-required>{{user.lastname || 'empty' }}</span>
+            </td>
+            <td><span editable-text="user.company" e-name="company" e-form="rowform" e-required>{{ user.company || 'empty' }}</span></td>
+            <td>{{user.createdAt | date}}</td>
+            <td style="white-space: nowrap">
+            <!-- form -->
+              <form editable-form name="rowform" onaftersave="SaveUser($data, user._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-success">
+                  <md-tooltip md-direction="right">Save changes</md-tooltip>
+                  <span class="glyphicon glyphicon-floppy-save"</span>
+                </button>
+                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-danger">
+                  <md-tooltip md-direction="right">Cancel</md-tooltip>
+                  <span class="glyphicon glyphicon-remove-sign"</span>
+                </button>
+            </form>
+            <div class="buttons" ng-show="!rowform.$visible">
+                <button class="btn btn-primary" ng-click="rowform.$show()">
+                  <md-tooltip md-direction="right">Quick edit</md-tooltip>
+                  <span class="glyphicon glyphicon-pencil"</span>
+                </button>
+                <button class="btn btn-info">
+                  <md-tooltip md-direction="right">Full details</md-tooltip>
+                  <span ui-sref="app.detail({_id: user._id})" class="glyphicon glyphicon-zoom-in"</span>
+                </button>
+                <button class="btn btn-danger" ng-click="DeleteUser(user._id)">
+                  <md-tooltip md-direction="right">Delete</md-tooltip>
+                  <span class="glyphicon glyphicon-trash"</span>
+                </button>
+              </div>  
+            </td>
+          </tr>
+      </table>
+      </div>
+    </md-tab>
+
+      <!-- COMPANIES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- COMPANIES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <!-- COMPANIES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+    <md-tab label="Companies">
+      <div ng-controller="CompanyControl">
+      <div ng-if="companiesLoaded == -1"><h3>{{message}}</h3></div>
+      <div ng-if="companiesLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
+      <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>
+        <table class="table table-bordered table-hover table-condensed" ng-if="companiesLoaded == 1">
+          <tr>
+            <th>NAME</th>
+            <th>ADDRESS </th>
+            <th>CITY</th>
+            <th>STATE</th>
+            <th>ZIP</th>
+            <th>JOBS (OPEN)</th>
+            <th>EMPLOYEES</th>
+            <th>ACTIONS</th>
+          </tr>
+          <tr class="fluid-container" ng-repeat="company in companies">
+            <td><span>{{ company.name || 'empty' }}</span></td>
+            <td><span>{{ company.address1 || 'empty' }}<span ng-if"company.address2"><br>{{company.address2}}</span></span></td>
+            <td><span>{{ company.city || 'empty' }}</span></td>
+            <td><span>{{ company.state || 'empty' }}</span></td>
+            <td><span>{{ company.zip || 'empty' }}</span></td>
+            <td>{{company.jobs.length || '0'}} ({{GetOpenJobsCount(company)}})</td>
+            <td>{{company.employees.length}}</td>
+            <td style="white-space: nowrap">
+            <!-- form -->
+              <form editable-form name="rowform" onaftersave="SaveUser($data, user._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-success">
+                  <md-tooltip md-direction="right">Save changes</md-tooltip>
+                  <span class="glyphicon glyphicon-floppy-save"</span>
+                </button>
+                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-danger">
+                  <md-tooltip md-direction="right">Cancel</md-tooltip>
+                  <span class="glyphicon glyphicon-remove-sign"</span>
+                </button>
+            </form>
+            <!-- form -->
+              <form editable-form name="rowform" onaftersave="SaveCompany($data, company._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == company">
+                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">save</button>
+                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default">cancel</button>
+            </form>
+            <div class="buttons" ng-show="!rowform.$visible">
+                <button class="btn btn-primary" ng-click="rowform.$show()">
+                  <md-tooltip md-direction="right">Quick edit</md-tooltip>
+                  <span class="glyphicon glyphicon-pencil"</span>
+                </button>
+                <button class="btn btn-info">
+                  <md-tooltip md-direction="right">Full details</md-tooltip>
+                  <span ui-sref="app.detail({_id: company._id})" class="glyphicon glyphicon-zoom-in"</span>
+                </button>
+                <button class="btn btn-danger" ng-click="DeleteCompany(company._id)">
+                  <md-tooltip md-direction="right">Delete</md-tooltip>
+                  <span class="glyphicon glyphicon-trash"</span>
+                </button>
+              </div>  
+            </td>
+          </tr>
+      </table>
+      </div>
+      </md-tab>
+    </md-tabs>
+  </md-content>
+
+
+
+</body>
+</html>

@@ -1,3 +1,22 @@
+//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+  //  Factories and services for interacting with our backend.
+  //
+  //  apexFactory 
+  //    ► Resource(HTTP) calls to the server
+  //    ► Handles jobs/users/notifications/companies
+  //
+  //  localStorage
+  //    ► Handles our local storage keys/values (login credentials)
+  //
+  //  AuthFactory
+  //    ► Processes logging in/out, registering, and saving/loading credentials ("remember me?")
+  //
+  //  Notes:
+  //
+  //  Todo:
+  //    -Have AuthFactory keep track of admin status...???
+  //    -AuthFactory needs to encrypt your credentials prior to localstorage save ("remember me?")
+//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 console.log("services.js loaded ok thanks");
 angular.module('anguApp')
 .constant("baseURL", "https://localhost:3443/")
@@ -9,30 +28,37 @@ angular.module('anguApp')
 	console.log('apex factory made');
 	var apexFac = {};
 
-  apexFac.GetUnclaimedJobs = function()
+
+  apexFac.GetUnclaimedUsers = function()
   {
-    return $resource(baseURL + "jobs/unclaimed", null, null);
+    return $resource(baseURL + "users/unclaimed", null, null);
   }
-    apexFac.GetUnclaimedUsers = function()
+  apexFac.GetNotifications = function()
   {
-    return $resource(baseURL + "data/users/unclaimed", null, null);
+    //Returns an array of notifications
+    //If there are none, we get:
+      //response[0] = {count: 0}
+      //response[1] = {type: "Success"}
+    return $resource(baseURL + "users/notifications", null, {'Delete':{method:'DELETE'}});
   }
-	apexFac.GetDetails = function()
-	{
-		return $resource(baseURL + "data/details/:_id", null, {'Update':{method:'PUT'}});
-	}
 	apexFac.GetUsers = function()
 	{
-		return $resource(baseURL + "data/users/:_id", null, {'Update':{method:'PUT'}});
+		return $resource(baseURL + "users/:_id", null, {'Update':{method:'PUT'}});
 	}
+
+  apexFac.GetDetails = function()
+  {
+    return $resource(baseURL + "data/details/:_id", null, {'Update':{method:'PUT'}});
+  }
+
 	apexFac.GetJobs = function()
 	{
-		console.log("running get jobs..");
 		return $resource(baseURL + "jobs/:_id", null, {'Update':{method:'PUT'}});
 	}
+
 	apexFac.GetCompanies = function()
 	{
-		return $resource(baseURL + "data/companies/:_id", null, {'Update':{method:'PUT'}});
+		return $resource(baseURL + "companies/:_id", null, {'Update':{method:'PUT'}});
 	}
 
 	return apexFac;
@@ -106,14 +132,13 @@ angular.module('anguApp')
 
     authFac.Login = function(loginData) {
         
-        $resource(baseURL + "users/login")
+        $resource(baseURL + "auth/login")
         .save(loginData,
            function(response) {
-              console.log("Successful log, here is the response:");
-              console.log(response);
-              console.log(response.token);
-              console.log(response.token.admin);
-              StoreUserCredentials({username:loginData.username, token: response.token, admin:response.token.admin});
+              //console.log("Successful log, here is the response:");
+              //console.log(response);
+              //console.log(response.token);
+              StoreUserCredentials({username:loginData.username, token: response.token});
               $rootScope.$broadcast('login:Successful');
            },
            function(response){
@@ -136,13 +161,13 @@ angular.module('anguApp')
     };
     
     authFac.Logout = function() {
-        $resource(baseURL + "users/logout").get(function(response){});
+        $resource(baseURL + "auth/logout").get(function(response){});
         DestroyUserCredentials();
     };
     
     authFac.Register = function(registerData) {
         
-        $resource(baseURL + "users/register")
+        $resource(baseURL + "auth/register")
         .save(registerData,
            function(response) {
               authFac.Login({username:registerData.username, password:registerData.password});
@@ -168,6 +193,12 @@ angular.module('anguApp')
         );
     };
     
+    authFac.ParseJwt = function() {
+        var base64Url = authToken.split('.')[1];
+        var base64 = base64Url.replace('-', '+').replace('_', '/');
+        return JSON.parse($window.atob(base64));
+    };
+
     authFac.IsAuthenticated = function() {
         return isAuthenticated;
     };

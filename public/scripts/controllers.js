@@ -1,3 +1,28 @@
+//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+  //  All controller code for our angular application.
+  //  These handle the models (variables/data) that interact with our views
+  //
+  //  CompanyControl      (dashboard)
+  //    ►stuff here 
+  //  UserControl         (dashboard)
+  //  JobControl          (dashboard)
+  //  NotificationControl (dashboard)
+  //  DetailControl       (jobDetail)
+  //  NewJobControl       (newJob)
+  //  HeaderControl       (header)
+  //  LoginControl        (header)
+  //  RegisterControl     (register)
+  //  TestControl         (test)
+  //
+  //  Notes:
+  //
+  //  Todo:
+  //    -Everything...
+  //    - NotificationControl: when we create "crendentials" variable, and ParseJWT() we first need
+  //      to verify there actually is a token, otherwise it will spit out an error to the console.
+  //
+//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+
 console.log("controllers.js loaded ok thanks");
 angular.module('anguApp')
 .controller('CompanyControl', ["$scope", "$stateParams", "apexFactory", function(sc, $stateParams, apexFactory) {
@@ -104,38 +129,48 @@ angular.module('anguApp')
    //  {'Cancelled'},
    //  {'Complete'}];
 
-  sc.statuses = ['Pending', 'Cancelled', 'Complete', 'Postponed'];
+  sc.statuses = ['Pending', 'Cancelled', 'Complete', 'Postponed', 'In-progress'];
   sc.ShowStatus = function(job) 
   {
     return (job.status);
   };  
 }])
 
-.controller('NotificationControl', ["$scope", "$stateParams", "apexFactory", function(sc, $stateParams, apexFactory) {
+.controller('NotificationControl', ["$scope", "$stateParams", "apexFactory", "AuthFactory", function(sc, $stateParams, apexFactory, AuthFactory) {
   console.log("loaded notification controller");
   sc.notifications = {};
   sc.unclaimedUsers = {};  
-  sc.unclaimedJobs = {};
   //Error handling
   //0=Loading, 1=Success, -1=Failed
   sc.notificationsLoaded = 0;
   sc.message = "Loading...";
 
-  sc.unclaimedJobs = apexFactory.GetUnclaimedJobs().query(
-     function(response) { sc.notifications = response; sc.notificationsLoaded = 1; console.log(sc.unclaimedJobs); },
-     function(response) { sc.message = "Error loading unclaimed jobs: " + response.status + " " + response.statusText; sc.notificationsLoaded = -1});
+  //Check if we're an admin so know to get unclaimed users/jobs
+  var credentials = AuthFactory.ParseJwt();
+
+
+  apexFactory.GetNotifications().query(
+     function(response) { sc.notifications = response; sc.notificationsLoaded = 1; },
+     function(response) { console.log("notify error: ", response); sc.message = "Error loading notifications: " + response.status + " " + response.statusText; sc.notificationsLoaded = -1});
   
-  sc.unclaimedUsers = apexFactory.GetUnclaimedUsers().query(
-     function(response) { sc.notifications = response; sc.notificationsLoaded = 1; console.log(sc.unclaimedUsers); },
-     function(response) { sc.message = "Error loading unclaimed users: " + response.status + " " + response.statusText; sc.notificationsLoaded = -1});
+  //For admin only...
+  if(credentials.admin)
+  {
+    apexFactory.GetUnclaimedUsers().query(
+       function(response) { sc.unclaimedUsers = response; sc.notificationsLoaded = 1; },
+       function(response) { sc.message = "Error loading unclaimed users: " + response.status + " " + response.statusText; sc.notificationsLoaded = -1});
+  }
+
+  sc.DeleteNotifications = function()
+  {
+    apexFactory.GetNotifications().Delete(
+      function(response) { alert("Success"); alert(JSON.stringify(response, undefined, 2)); },
+      function(response) { alert("FAILURE"); alert(JSON.stringify(response, undefined, 2)); });
+  };
 }])
 
 .controller('DetailControl', ["$scope", "$stateParams", "apexFactory", function(sc, $stateParams, apexFactory) {
-  
-  //USER 5751fa354d964d9c3f743e8f
-  //JOB 5783b96635ee2891f2cc40d0
-  console.log("Loading page for DB entry # ", $stateParams._id);
-  console.log("stateParams ", $stateParams);
+  //console.log("Loading page for DB entry # ", $stateParams._id);
   sc.type = "Loading";
   sc.details;
 
@@ -175,6 +210,7 @@ angular.module('anguApp')
           if(sc.type == "Failed")
           {
             console.log("Database search returned no results.");
+            //
           }
           else
           {
@@ -186,6 +222,8 @@ angular.module('anguApp')
       );
     }
   }
+
+  sc.LogDetails($stateParams._id);
 }])
 
 .controller('NewJobControl', ['$scope', function(sc){
@@ -270,13 +308,14 @@ angular.module('anguApp')
     };
 }])
 
-.controller('TestControl', ['$scope', '$localStorage', function($scope, $localStorage){
+.controller('TestControl', ['$scope', '$localStorage', "apexFactory", function(sc, $localStorage, apexFactory){
   console.log("loaded test controller");
-  var credentials = $localStorage.getObject("Token", '{}');
-  console.log(credentials);
-  console.log(credentials.decoded);
-  console.log(credentials.decoded.admin);
+  sc.notifies;
 
+  apexFactory.GetNotifications().query(
+    function(response) { console.log("SUXSES"); sc.notifies = response;},
+    function(response) { console.log("failed", response); }
+  );
 
 
 }]);

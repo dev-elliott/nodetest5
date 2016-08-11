@@ -46,7 +46,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-
+#folders that I dont need to upload to github
 node_modules
 bower_components
 data

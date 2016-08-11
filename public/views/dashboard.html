@@ -21,11 +21,17 @@
         <table class="table table-bordered table-hover table-condensed" ng-if="notificationsLoaded == 1">
           <tr>
             <th>Greetings</th>
+            <td>There are {{unclaimedUsers.length || '0'}} unclaimed users.</td>
           </tr>
           <tr>
-            <td>You have {{notificationCount || '0'}} notifications.</td>
-            <td>There are {{unclaimedUsers.length}} unclaimed users.</td>
-            <td>There are {{unclaimedJobs.length}} unclaimed jobs.</td>
+            <td><button class="btn btn-danger" ng-click="DeleteNotifications()">
+                  <md-tooltip md-direction="right">Delete All</md-tooltip>
+                  <span class="glyphicon glyphicon-trash"</span>
+                </button></span>You have {{notifications.length || '0'}} notifications.</td>
+            <tr ng-repeat="note in notifications"><td><strong>{{note.createdAt | date:'MM/dd/yyyy@h:mma'}}</strong> <span ng-bind-html="note.body"></span></td></tr>
+            </tr>
+          </tr>
+          <tr>
           </tr>
         </table>
       </div>
@@ -199,8 +205,6 @@
             </form>
             <!-- form -->
               <form editable-form name="rowform" onaftersave="SaveCompany($data, company._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == company">
-                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">save</button>
-                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default">cancel</button>
             </form>
             <div class="buttons" ng-show="!rowform.$visible">
                 <button class="btn btn-primary" ng-click="rowform.$show()">

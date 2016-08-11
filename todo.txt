@@ -1,0 +1,74 @@
+ROADMAP
+
+> Complete notification generation (server side)
+> 'Refreshing' our page when data changes (dashboard)
+--> How to update and "notify" the user of new notifications?
+> Create a way to "claim" or link users with companies
+--> Allow admin to set company via a dropdown in the Users tab. (also applies to detail/user page)
+> Create front end pages:
+--> NewJob submit -- both user and admin views/functionality
+--> NewRequest submit
+--> Welcome page
+--> Profile page (edit User and Company)
+> Job comments
+> Backend email functionality + user settings/subscriptions
+
+
+
+
+
+//TODO
+
+
+Ecomonical data transfer:
+Make sure I'm getting(and sending) the minimum amount of JSON data sent from the server per request.
+example: I get a job, and am only displaying it's name/status...I don't need to have the comments populated, etc
+Furthermore when updating and it back with a PUT, I need to only be sending the updated/changed/new/added values
+That will require clientside validation/creation of a clean JSON object with jus those values
+>>> When doing a find on the database, we can include or exclude any fields we want
+>>> we'll want to make sure we are only pull out the data we need for each call
+>>> exclude looks like: Users.find({query here}, {notifications:1})
+	>>> The second set of JSON is where we specify what fields, 0 = exclude, 1 = include
+
+
+
+Getting database entry by ID# or name
+--SaveUsers(updatedData, _id)
+	userToUpdate = users.getByID(_id)
+	angular.extend(usertoUpdate, updatedData)
+	$http.updateuser(usertoUpdate)
+--GetCompanyID(companyName) //
+
+
+
+Error handling for all apexFactory http calls in my controllers
+
+
+DoesUsernameExist: database check to see if a username (email) is already entered
+to prevent duplicate registries. Then direct to "forgot your password?"
+---> Create server route to return true or false if username exists
+---> Register.html: transform to x-editable form and implememnt the above with "onbeforesave"
+
+
+LocalStorage on browser of username and password need to be encrypted!
+
+Need to customize/stylize the tooltips so they're actually visible and readable..
+I like the bootstrap style, black bg white text with a little tail to parent element
+
+
+When your token expires, you need to be logged out and the token needs to be deleted from local storage.
+You will then be prompted to login again.
+Need to let Angular know you've been logged out somehow?
+
+
+Broadcast to rootscope on data changes?
+As in, there's a new notification, we need to let angular know so it can be displayed and the datapage /controller refreshed
+
+
+
+
+On all our routes we want to clarify our response (res.end or res.json)
+And clientside will need to react accordingly (Alert(Notifications were deleted, yay)) etc
+
+
+Tracking your "go back" history / breadcrumbs / whatever

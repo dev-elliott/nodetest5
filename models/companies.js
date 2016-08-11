@@ -1,8 +1,15 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+  //  Database model/schema code for Companies & their respective jobs, details & employees (users)
+  //
+  //  Notes:
+  //
+  //  Todo:
+  //
+//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+var mongoose 	= require('mongoose');
+var Schema 		= mongoose.Schema;
 
 var Company = new Schema({
-	//type: {type: String, default: "Company" },
 	name: {type: String, required: true},
 	address1: {type: String, required: true},
 	address2: {type: String},

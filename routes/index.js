@@ -1,3 +1,12 @@
+//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+  // Server-side HTTP routing.
+  // Distributing the single-page-application (through angularjs) "index.html"
+  //
+  //  Notes:
+  //
+  //  Todo:
+  //
+//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 var express = require('express');
 var router = express.Router();
 

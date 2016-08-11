@@ -24,7 +24,7 @@ angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource",
       url: '/', 
       views: {
         'header': {templateUrl: 'views/header.html', controller: 'HeaderControl'},
-        'content': {template: '<p>welcome to /</p>'/*, controller: 'IndexControl'*/},
+        'content': {templateUrl: 'views/welcome.html', controller: 'HeaderControl' /*, controller: 'IndexControl'*/},
         'footer': {templateUrl: 'views/footer.html'}
       }})
 
@@ -48,6 +48,15 @@ angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource",
       url:'detail/:_id',
       views: 
         {'content@': {templateUrl: 'views/detail.html'}}
+    })
+    .state('app.contactus', { // route for contactus page
+      url: 'contact',
+      views: {
+        'content@': {
+          templateUrl: 'views/contactus.html',
+          controller: 'RequestController'
+        }
+      }
     });
 
     $urlRouterProvider.otherwise('/');

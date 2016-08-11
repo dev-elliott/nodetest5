@@ -25,6 +25,18 @@
 
 console.log("controllers.js loaded ok thanks");
 angular.module('anguApp')
+.controller('BodyControl', ['$scope', '$state', function($scope, $state) {
+    // Allows us to set a background image based on which $state we are in.
+    // For now, we are only showing a background image on the Welcome page.
+    $scope.getBackground = function() {
+      if ($state.current.name === 'app') {
+        return 'images/sup.jpg';
+      } 
+      else {
+        return '';
+      }
+    }
+}])
 .controller('CompanyControl', ["$scope", "$stateParams", "apexFactory", function(sc, $stateParams, apexFactory) {
   console.log("companycontrol loaded ok thanks");
   //Error handling
@@ -317,5 +329,71 @@ angular.module('anguApp')
     function(response) { console.log("failed", response); }
   );
 
+
+}])
+
+.controller('RequestController', ['$scope', 'apexFactory', 'AuthFactory', '$localStorage', function(sc, apexFactory, AuthFactory, $localStorage) {
+
+  // Controller for sending a new inquiry. This can probably go in NotificationController later.
+  // TODO: Have request.company, .name, and .email populate automatically when user is logged in.
+
+  sc.request = {
+    company: "",
+    name: "",
+    email: "",
+    comment: ""
+  }
+
+  // If user is logged in, fill in sc.request details automatically.
+  if(sc.$parent.loggedIn) {
+    console.log('Accessing sc.$parent.loggedIn.');
+
+    // Parse the token to get userId.
+    var credentials = AuthFactory.ParseJwt();
+    var myDetails = {};
+
+    apexFactory.GetUsers().get({_id: credentials._id}).$promise.then(
+      function(response) {
+        myDetails = response; 
+        console.log('User details: ', myDetails);
+
+        sc.request.company = myDetails.company;
+        sc.request.name = myDetails.firstname + ' ' + myDetails.lastname;
+        sc.request.email = myDetails.username;
+      },
+      function(response) {
+        console.log('you are bad');
+      }
+    );
+  }
+
+  sc.postRequest = function() {
+    console.log('Submitted request: ', sc.request);
+    alert(JSON.stringify(sc.request, undefined, 2));
+  }
+
+  function init_map() {
+
+    console.log('Creating Google Map.');
+    var location = new google.maps.LatLng(47.900268, -122.296205); // Pac West latitude/longitude.
+
+    var mapoptions = {
+      center: location,
+      zoom: 16,
+      scrollwheel: false,
+      draggable: false,
+      mapTypeId:google.maps.MapTypeId.ROADMAP
+    };
+
+    var map = new google.maps.Map(document.getElementById('googleMap'), mapoptions);
+
+    var marker = new google.maps.Marker({
+      position: location
+    });
+
+    marker.setMap(map);
+  }
+  
+  init_map();
 
 }]);

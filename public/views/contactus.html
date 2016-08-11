@@ -1,0 +1,70 @@
+<div class='container' ng-controller='HeaderControl'>
+    <ul class='breadcrumb'>
+        <li><a href="#">Home</a></li>
+        <li class='active'>Contact Us</li>
+    </ul>
+    <div class='row'>
+        <div class='col-xs-12 col-sm-7'>
+            <h3>Submit a Request</h3>
+            <h5>Please submit your request below. We will try to contact you in 2-3 years.</h5><br>
+            <small ng-hide='loggedIn'>* Indicates Required Field</small><br>
+            <!--request form-->
+            <form class='form-horizontal' role='form' name='requestForm' ng-controller='RequestController' ng-Submit='postRequest()' novalidate>
+                <!--Company-->
+                <div class='form-group'>
+                    <label for="companyName" class='col-sm-2 control-label'>Company</label>
+                    <div class='col-sm-10'>
+                        <p class='form-control-static' ng-if='loggedIn'>{{request.company}}</p>
+                        <input type='text' class='form-control' id='companyName' placeholder='Enter Your Company' ng-model='request.company' ng-if='!loggedIn'>
+                    </div>
+                </div>
+                <!--Name-->
+                <div class='form-group' ng-class="{ 'has-error' : requestForm.userName.$error.required && !requestForm.userName.$pristine }">
+                    <label for="userName" class='col-sm-2 control-label'>Name<span ng-hide='loggedIn'>*</span></label>
+                    <div class='col-sm-10'>
+                        <p class='form-control-static' ng-if='loggedIn'>{{request.name}}</p>
+                        <input type='text' class='form-control' id='userName' name='userName' placeholder='Enter Your Name' ng-model='request.name' ng-if='!loggedIn' required>
+                        <span ng-show="requestForm.userName.$error.required && !requestForm.userName.$pristine" class="help-block">Please enter your name.</span>
+                    </div>
+                </div>
+                <!--Email-->
+                <div class='form-group' ng-class="{ 'has-error' : requestForm.userEmail.$error.required && !requestForm.userEmail.$pristine }">
+                    <label for="userEmail" class='col-sm-2 control-label'>Email<span ng-hide='loggedIn'>*</span></label>
+                    <div class='col-sm-10'>
+                        <p class='form-control-static' ng-if='loggedIn'>{{request.email}}</p>
+                        <input type='email' class='form-control' id='userEmail' name='userEmail' placeholder='Enter Your Email Address' ng-model='request.email' ng-if='!loggedIn' required>
+                        <span ng-show="requestForm.userEmail.$error.required && !requestForm.userEmail.$pristine" class="help-block">Please enter your email address.</span>
+                    </div>
+                </div>
+                <!--Request for Information-->
+                <div class='form-group' ng-class="{ 'has-error' : requestForm.requestComment.$error.required && !requestForm.requestComment.$pristine }">
+                    <label for="requestComment" class='col-sm-2 control-label'>Request*</label>
+                    <div class='col-sm-10'>
+                        <textarea class='form-control' id='requestComment' name='requestComment' placeholder='Please enter your request' ng-model='request.comment' rows='12' required></textarea>
+                        <span ng-show="requestForm.requestComment.$error.required && !requestForm.requestComment.$pristine" class="help-block">Please enter a request.</span>
+                    </div>
+                </div>
+                <!--Submit-->
+                <div>
+                    <button type="submit" class='btn btn-primary' ng-disabled='requestForm.$invalid'>Submit</button>
+                </div>
+            </form>
+        </div>
+        <div class='col-xs-12 col-sm-5'>
+            <h3>Our Location</h3><br>
+            <div id='googleMap' style='width:300px; height:200px; '></div><br>
+
+            <!--Contact info-->
+            <address>
+                <span class='glyphicon glyphicon-map-marker'></span><strong> A-PEX Design Services</strong><br>
+                10731 47th Place West <br>
+                Mukilteo, WA 98275 <br>
+            </address>
+            <p>
+                <span class='glyphicon glyphicon-earphone'></span> (425) 493-9680 <br>
+                <small>*Ask for A-PEX Design</small>
+            </p>
+        </div>
+    </div>
+</div>
+

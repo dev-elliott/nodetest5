@@ -1,0 +1,74 @@
+.breadcrumb {
+    background-color: #FEFCE5;
+    border: 2px solid #B9B57F;
+    border-radius: 10px;
+}
+
+.navbar-default {
+    background: #009CB1;
+    color: #FFFFFF; 
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+    color: #FFFFFF;
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+    background-color: #FEFCE5;
+    color: #000000;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: #FFFFFF;
+}
+
+.btn-primary {
+    background: #009CB1;
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background: #FFFFFF;
+    color: #009CB1;
+    border-color: #009CB1;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    background: #00BFD9;
+    color: #FFFFFF;
+}
+
+.btn-secondary:hover, .btn-secondary:active .btn-secondary:focus {
+    background: #FFFFFF;
+    color: #00BFD9;
+    border-color: #00BFD9;
+    font-weight: bold;
+}
+
+.btn-block:active, .btn-block:focus {
+    background: #FEFCE5;
+}
+
+footer.panel {
+    background: #FEFCE5;
+    color: #000000;
+    opacity: 0.85;
+    position: absolute;
+    padding-top: 10px;
+}
+
+#welcomeDialog {
+    background: #FEFCE5;
+    opacity: 0.85;
+}
+
+#welcomeLogo {
+    padding: 10px;
+}
+
+#inquiryComment {
+    resize: vertical;
+}

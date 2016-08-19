@@ -310,12 +310,18 @@ angular.module('anguApp')
 
 .controller('TestControl', ['$scope', '$localStorage', "apexFactory", function(sc, $localStorage, apexFactory){
   console.log("loaded test controller");
-  sc.notifies;
+  sc.notes = [];
+   apexFactory.GetTestData().query().$promise.then(
+    function(response) { sc.notes = response; 
+      console.log(response);
+      console.log(sc.notes[0].body);
+      console.log(sc.notes[1].body);
 
-  apexFactory.GetNotifications().query(
-    function(response) { console.log("SUXSES"); sc.notifies = response;},
-    function(response) { console.log("failed", response); }
-  );
+
+    },
+    function(response) { alert("Error loading Users: " + response.status + " " + response.statusText); });
+
+
 
 
 }]);

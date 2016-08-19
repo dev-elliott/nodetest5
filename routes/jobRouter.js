@@ -224,7 +224,6 @@ jobRouter.use(bodyParser.json());
 						obj2.id = job._id;
 						obj2.number = job.jobNumber;
 						Utility.notifyAdminNEW("Job-Edit", obj1, obj2);
-						Utility.notifyAdminNEW(
 					}
 				res.json(job);
 			}

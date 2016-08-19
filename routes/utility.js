@@ -6,6 +6,7 @@
   //  Notes:
   //
   //  Todo:
+  //	-test 'Request-New' notification HTML generation. need to add some to the DB
   //	-When we confirm the token is expired, we need to let the client know so it can logout
   //	 and prompt the user to log in again
   //	-Generate two new functions to help in route verification:
@@ -170,8 +171,8 @@
 		var link1;
 		var link2;
 
-		if(obj1.id) link1 = config.baseURL + "#/detail/" + obj1.id;
-		if(obj2.id) link2 = config.baseURL + "#/detail/" + obj2.id;
+		if(obj1) link1 = config.baseURL + "#/detail/" + obj1.id;
+		if(obj2) link2 = config.baseURL + "#/detail/" + obj2.id;
 
 
 		switch(type)
@@ -192,10 +193,10 @@
 
 				//If the job has been confirmed by admin (and a number has been generated)
 				//jobNumber defaults to Pending but this catches other non-generated cases to be safe
-				if(obj2.number != "Pending" && obj2.number != null && obj2.number != "")
-					return '<a href="'+link1+'">'+obj1.name+'</a> has modfied job # <a href="'+link2+'">'+obj2.number+'</a>';
-				else
+				if(obj2.number == "Pending" || obj2.number == null || obj2.number == "")
 					return '<a href="'+link1+'">'+obj1.name+'</a> has modified a <a href="'+link2+'">pending job</a>';
+				else
+					return '<a href="'+link1+'">'+obj1.name+'</a> has modfied job # <a href="'+link2+'">'+obj2.number+'</a>';
 			break;
 			
 			case('User-New'):
@@ -215,14 +216,20 @@
 
 			case('Company-Edit'):
 				//*Rainier View* has edited their profile.
-				return 'Company <a href="'+link1+'">'+obj1.name+'</a> has modified their profile.';
+				return '<a href="'+link1+'">'+obj1.name+'</a> has modified their profile.';
 			break;
 
-			case('Request-New'):
+			//STILL NEEDS TO BE TESTE!!!!!!!!1
+			case('Request-New'): 
 				//Anonymous has submit a *new inquiry*
 				if(!obj2) return 'An anonymous visitor has submit a <a href="'+link1+'">new inquiry</a>.';
 				//*John Doe* has submit a *new inquiry*
 				else return 'User <a href="'+link2+'">'+obj2.firstname+' '+obj2.lastname+'</a> has submit a <a href="'+link1+'">new inquiry</a>';
+			break;
+
+			case('Comment-New'):
+				//*John Doe* has posted a comment on job # *16-0236*
+				return '<a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has commented on job # <a href="'+link2+'">'+obj2.number+'</a>';
 			break;
 		}
 	}

@@ -3,7 +3,12 @@
 <body>
 
 <div ng-controller="TestControl">
-
+<p>Here is our data: {{notes.length}}</p>
+ <table class="table table-bordered table-hover table-condensed">
+          <tr class="fluid-container" ng-repeat="note in notes">
+            <td><span ng-bind-html="note.body"></span></td>
+          </tr>
+</table>
 
 
 </div>

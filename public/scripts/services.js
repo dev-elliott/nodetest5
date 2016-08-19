@@ -28,6 +28,10 @@ angular.module('anguApp')
 	console.log('apex factory made');
 	var apexFac = {};
 
+  apexFac.GetTestData = function()
+  {
+    return $resource(baseURL + "data/test", null, null);
+  }
 
   apexFac.GetUnclaimedUsers = function()
   {

@@ -20,7 +20,8 @@
   var LocalStrategy = require('passport-local').Strategy;
   //var Apex          = require('./models/jobs');
   var Users         = require('./models/user');
-  //var companies     = require('./models/companies');
+  // var Companies     = require('./models/companies');
+  // var Jobs          = require('./models/jobs');
   var routes        = require('./routes/index');
   var authRouter    = require('./routes/authRouter');
   var userRouter    = require('./routes/userRouter');
@@ -46,7 +47,6 @@
   db.on('error', console.error.bind(console, 'database connection error:'));
   db.once('open', function() {
     console.log("Successfully connected to our database.");
-    //Utility.generateLookup(); 
   });
   
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗

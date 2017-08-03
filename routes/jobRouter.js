@@ -48,22 +48,22 @@ jobRouter.use(bodyParser.json());
 				//.populate('comments.author')
 				.populate('company')
 				.populate('submitBy')
-				.exec(function (err, job) {
+				.exec(function (err, jobs) {
 					if(err) { return next(new Error("ERROR IN FIND - GET/JOBS: ")); }
-					res.json(job);
+					res.json(jobs);
 			});
 		}
 		else
 		{
 			//Not admin, return jobs for your company only
-			var companyId = mongoose.Types.ObjectId(req.decoded.companyId.toString());
+			var companyId = mongoose.Types.ObjectId(req.decoded.company.toString());
 			Jobs.find({company: companyId})
 				.populate('company')
 				.populate('submitBy')
-				.exec(function (err, job) {
+				.exec(function (err, jobs) {
 					if(err) { return next(new Error("ERROR IN FIND - GET/JOBS: ")); }
 					if(!jobs || jobs.length < 1) res.json({result:"Success", count:0});
-					res.json(job);
+					res.json(jobs);
 			});
 		}
 	})
@@ -152,7 +152,7 @@ jobRouter.use(bodyParser.json());
 		// 	//console.log("Deleted all jobs.");
 		// 	res.json(resp);
 		// });
-		res.json("Nah");
+		res.json({result:"Nah"});
 	});
 
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -215,16 +215,17 @@ jobRouter.use(bodyParser.json());
 			if(req.decoded.companyId == job.company || req.decoded.admin)
 			{
 				//console.log("Updated job # " + job._id + " with the following data: " + JSON.stringify(req.body));
-				if(req.decoded.admin) 
-					{
-						var obj1 = {};
-						var obj2 = {};
-						obj1.id = job.company._id;
-						obj1.name = job.company.name;
-						obj2.id = job._id;
-						obj2.number = job.jobNumber;
-						Utility.notifyAdminNEW("Job-Edit", obj1, obj2);
-					}
+				//If the update is done by a non-admin, notify the admin of the changes.
+				if(!req.decoded.admin) 
+				{
+					var obj1 = {};
+					var obj2 = {};
+					obj1.id = job.company._id;
+					obj1.name = job.company.name;
+					obj2.id = job._id;
+					obj2.number = job.jobNumber;
+					Utility.notifyAdminNEW("Job-Edit", obj1, obj2);
+				}
 				res.json(job);
 			}
 			else 
@@ -316,7 +317,7 @@ jobRouter.use(bodyParser.json());
 				//Build an array of userids from:
 				//	-Every comment author id
 				//	-Job author id
-				// make sure no duplicates
+				// make sure no duplicates, use id.equals() for comparisions/checks
 				res.json(job);
 			});
 		});

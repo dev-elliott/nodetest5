@@ -1,5 +1,5 @@
 <!-- APEX Navigation Bar -->
-<nav class="navbar navbar-default" role="navigation">
+<nav ng-if='user.loggedIn' class="navbar navbar-default" role="navigation">
   <div class="navbar-header">
     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
       <span class="icon-bar"></span>
@@ -10,7 +10,7 @@
   </div>
   <div class="navbar-collapse collapse">
   <ul class="nav navbar-nav">
-      <li ng-if='!loggedIn' ng-class="{active: StateIs('app')}"><a ui-sref="app">Welcome</a></li>
+      <li ng-if='!user.loggedIn' ng-class="{active: StateIs('app')}"><a ui-sref="app">Welcome</a></li>
       <li ng-class="{active: StateIs('app.dashboard')}"><a ui-sref="app.dashboard">Dashboard</a></li>
       <li ng-class="{active: StateIs('app.newjob')}"><a ui-sref="app.newjob">NewJob</a></li>
       <li ng-class="{active: StateIs('app.test')}"><a ui-sref="app.test">test</a></li>
@@ -18,9 +18,9 @@
       <li ng-class="{active: StateIs('app.contactus')}"><a ui-sref="app.contactus">Contact</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      <li ng-if="!loggedIn"><a ng-click="OpenLogin()"><span class="glyphicon glyphicon-log-in"></span>  Login</a></li>
-      <li ng-if="loggedIn"><a><span>Ahoy, {{username}}</span></a></li>
-      <li ng-if="loggedIn"><a ng-click="LogOut()"><span class="glyphicon glyphicon-log-out">  Logout</span></a></li>
+      <li ng-if="!user.loggedIn"><a ng-click="OpenLogin()"><span class="glyphicon glyphicon-log-in"></span>  Login</a></li>
+      <li ng-if="user.loggedIn"><a><span>Ahoy, {{user.username}}</span></a></li>
+      <li ng-if="user.loggedIn"><a ng-click="LogOut()"><span class="glyphicon glyphicon-log-out">  Logout</span></a></li>
     </ul>
   </div>
 </nav>

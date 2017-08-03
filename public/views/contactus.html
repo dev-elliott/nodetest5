@@ -1,4 +1,4 @@
-<div class='container' ng-controller='HeaderControl'>
+<div class='container'>
     <ul class='breadcrumb'>
         <li><a href="#">Home</a></li>
         <li class='active'>Contact Us</li>
@@ -6,10 +6,10 @@
     <div class='row'>
         <div class='col-xs-12 col-sm-7'>
             <h3>Submit a Request</h3>
-            <h5>Please submit your request below. We will try to contact you in 2-3 years.</h5><br>
-            <small ng-hide='loggedIn'>* Indicates Required Field</small><br>
+            <h5>Please submit your inquiry below. We will try to contact you in 2-3 years.</h5><br>
+            <small>* Indicates Required Field</small><br>
             <!--request form-->
-            <form class='form-horizontal' role='form' name='requestForm' ng-controller='RequestController' ng-Submit='postRequest()' novalidate>
+            <form class='form-horizontal' role='form' name='requestForm' ng-Submit='postRequest()' novalidate>
                 <!--Company-->
                 <div class='form-group'>
                     <label for="companyName" class='col-sm-2 control-label'>Company</label>

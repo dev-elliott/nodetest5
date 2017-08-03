@@ -16,9 +16,11 @@ var Company = new Schema({
 	city: {type: String, required: true},
 	zip: {type: String, required: true},
 	state: {type: String, required: true},
-	phone: {type: String},
-	employees: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
-	jobs: [{type: mongoose.Schema.Types.ObjectId, ref: 'Job'}]
+	phone: {type: String}//,
+	//We don't really need to keep track of employees or jobs list here....
+	//when we can just do a users lookup where company.id = employer company
+	//employees: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+	//jobs: [{type: mongoose.Schema.Types.ObjectId, ref: 'Job'}]
 }, {timestamps: true});
 
 Company.methods.getInfo = function() 

@@ -15,7 +15,7 @@ var Request = new Schema({
 	userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 	//Their inquiry message
 	comment: {type: String, required: true},
-	//If the visitor is logged in autopopulate, otherwise prompt for their company name
+	//If the visitor is logged in: autopopulate, otherwise prompt for their company name
 	company: {type: String},
 	//First and last name in one string
 	name: {type: String, required: true},

@@ -43,7 +43,7 @@ userRouter.use(bodyParser.json());
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.get(function(req, res, next) {
 		Users.find({}/*{admin:{$in: [null, false]}}*/)
-			.populate('companyId')
+			//.populate('company')
 			.exec(function (err, users) {
 				if(err) { return next(new Error("ERROR IN FIND - DATA GET/USERS: ", err)); }
 				res.json(users);// res.json also sends response code # and headers :O
@@ -108,7 +108,7 @@ userRouter.use(bodyParser.json());
 				if(err) { console.log("ERROR IN FINDING - DATA GET/USERID/NOTIFICATIONS, heres the error:",  err); return next(err); }
 				if(!user) { console.log("We didn't find a user to pull notifications from..."); return next(err); }
 				if(user.notifications.length <= 0) {res.json([{count: 0}, {type:"Success"}]); } //Filler JSON so we can query
-				else {console.log("We sent your notifications, thanks"); res.json(user.notifications)};
+				else {/*console.log("We sent your notifications, thanks");*/ res.json(user.notifications)};
 		});
 	})
 	//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -126,7 +126,10 @@ userRouter.use(bodyParser.json());
 			if(err) { console.log("ERROR IN FINDING - DATA DELETE/USER/USERID/NOTIFICATIONS: ",  err); return next(err); }
 
 			if(!user.notifications.length > 0)
-				res.json({result:"There are no notifications to delete!"});
+			{
+				res.json({result:"Success"});
+				return;
+			}
 
 			for(var i = (user.notifications.length -1); i >= 0; i--)
 				{ user.notifications.pull(user.notifications[i]._id); }
@@ -134,7 +137,7 @@ userRouter.use(bodyParser.json());
 			user.save(function(err, resp){
 				if(err) { console.log("ERROR IN SAVING - DELETE DATA/USERID/NOTIFICATIONS: ",  err); return next(err); }
 				//console.log("Deleted all notifications for user id#: " + req.params.userId);
-				res.json({result:"Deleted all notifications."});
+				res.json({result:"Success"});
 			});
 		});
 	});
@@ -160,12 +163,15 @@ userRouter.use(bodyParser.json());
 	//	-Repsonse of JSON format for all users
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.get(function(req, res, next) {
-		if(!req.decoded.admin || req.decoded._id != req.params.userId)
-			return next(new Error("You are not authorized to view this account"));
+		if(!req.decoded.admin)
+		{
+			if(req.decoded._id != req.params.userId)
+				return next(new Error("You are not authorized to view this account"));
+		}
 		else
 		{
 			Users.findById(req.params.userId)
-				.populate('companyId')
+				.populate('company', 'name')
 				.exec(function (err, users) {
 					if(err) { return next(new Error("ERROR IN FIND - DATA GET/USERS/USERID: ", err)); }
 					res.json(users);// res.json also sends response code # and headers :O
@@ -182,21 +188,23 @@ userRouter.use(bodyParser.json());
 	// 	---No JSON data provided. I throw my own error below, immediately when that's detected.
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.put(function(req, res, next) {
-		if(!req.decoded.admin || req.decoded._id != req.params.userId)
-			return next(new Error("You are not authorized to edit this account"));
+		if(!req.decoded.admin)
+		{
+			if(req.decoded._id != req.params.userId)
+				return next(new Error("You are not authorized to edit this account"));
+		}
 		else
 		{
 			//Check for non-existant JSON body data before trying to validate/create it
 			if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO UPDATE THE USER WITH"));
 
-			Users.findByIdAndUpdate(req.params.userId, { $set: req.body } , { new: true }, function(err,user) {
-				if(err) { console.log("ERROR IN FIND&UPDATE - PUT DATA/USERS/USERID: ",  err); return next(err); }
-				if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO UPDATE THE USER WITH"));
+			Users.findByIdAndUpdate(req.params.userId, { $set: req.body } , { new: true }, function(err,user) 
+			{
+				if(err) { return next(new Error("ERROR IN FIND - PUT DATA/USERS/USERID: " + err)); }
 				if(!req.decoded.admin) Utility.notifyAdmin("A user has been updated.");
-				//console.log("Updated user # " + user._id + " with the following data: " + JSON.stringify(req.body));
-
-				res.json({result:'Success'});
+					res.json(user);
 			});
+				
 		}
 	})
 	//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -209,7 +217,7 @@ userRouter.use(bodyParser.json());
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.delete(Utility.verifyAdmin, function(req, res, next) {
 		Users.remove({"_id" : req.params.userId}, function(err, resp){
-			if(err) { console.log("ERROR IN REMOVE - DELETE/JOBID: ",  err); return next(err); }
+			if(err) { console.log("ERROR IN REMOVE - DELETE/USERID: ",  err); return next(err); }
 			console.log("Deleted user with id#: " + req.params.userId);
 			res.json({result:"Success"});
 		});

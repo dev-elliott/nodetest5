@@ -4,10 +4,10 @@
             <img class='img-responsive center-block' ng-src="../images/a-pex logo.jpg" alt='logo' id='welcomeLogo'>
             <h3 class='text-center'>Working with contractors on fire sprinkler designs since 1888</h3><br>
 
-            <button type="button" class="btn btn-primary btn-block" ng-click='OpenLogin()' ng-if='!loggedIn'>Login</button>
-            <button type="button" class="btn btn-primary btn-block" ng-click='LogOut()' ng-if='loggedIn'>Logout</button>
-            <button type="button" class="btn btn-secondary btn-block" ng-controller='LoginControl' ng-click='openRegister()' ng-if='!loggedIn'>Register</button>
-            <button type="button" class="btn btn-secondary btn-block" ui-sref='app.contactus'>Contact Us</button><br>
+            <button type="button" class="btn btn-primary btn-block" ng-click='OpenLogin()' ng-if='!user.loggedIn'>Login</button>
+            <button type="button" class="btn btn-primary btn-block" ng-click='LogOut()' ng-if='user.loggedIn'>Logout</button>
+            <button type="button" class="btn btn-primary btn-block" ng-click='openRegister()' ng-if='!user.loggedIn'>Register</button>
+            <button type="button" class="btn btn-primary btn-block" ui-sref='app.contactus'>Contact Us</button><br>
         </div>
     </div> <!-- Row -->
 </div> <!-- Container -->

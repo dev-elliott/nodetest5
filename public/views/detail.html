@@ -16,19 +16,23 @@
         User ID = {{details._id}}
         </br>Email = {{details.username}}
         </br>Name = {{details.firstname}} {{details.lastname}}
-        </br>Registered = {{details.createdOn | date}}
+        </br>Registered = {{details.createdAt | date}}
+        </br>TODO: List of jobs, comments, etc
      </div>
           
     <div ng-switch-when="Job">
         Job ID = {{details._id}}
         </br>Job # = {{details.jobNumber}}
         </br>Name = {{details.name}}
-        </br>Plumber = {{details.plumber}}
+        </br>Plumber = {{details.company.name}}
+        </br>TODO: Comments, date, status, etc.
+
     </div>     
 
     <div ng-switch-when="Company">
         Company Id = {{details._id}}
         </br>Name = {{details.name}}
+        </br>TODO: Rest of company detail, list of employees, etc.
     </div>
 
      <div ng-switch-when="Failed">

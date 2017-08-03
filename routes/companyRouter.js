@@ -53,7 +53,7 @@ companyRouter.use(bodyParser.json());
 	//	.post() new company
 	//	-Restrictions: Must be logged in as Admin
 	//  -Request JSON format of new company to be added to the database
-	// 	-Response confirming the job was successfully created, and printing the ID#
+	// 	-Response confirming the company was successfully created, and printing the ID#
 	// 	-Possible failures:
 	// 	---Incorrect JSON format provided: this will cause a mongoose "ValidationError" to be thrown
 	// 	---No JSON data provided. I throw my own error below, immediately when that's detected.
@@ -62,12 +62,14 @@ companyRouter.use(bodyParser.json());
 		//Check for non-existant JSON body data before trying to validate/create it
 		if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO CREATE THE JOB WITH"));
 
-		Companies.create(req.body, function(err, job) {
+		Companies.create(req.body, function(err, company) {
 			if(err) { console.log("ERROR IN CREATE - POST DATA/COMPANIES: ",  err); return next(err); }
 			//console.log("New company created: " + company.name + "\nCOMPANY#: " + company._id);
 			res.json({result:company._id});
 		});
 	});
+
+
 
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 /*╠*/companyRouter.route('/:companyId')																//╣ notify
@@ -92,21 +94,37 @@ companyRouter.use(bodyParser.json());
 	// 	---Incorrect/invalid/non-existant ID#
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.get(function(req, res, next) {
-		if(!req.decoded.admin || req.decoded.companyId != req.params.companyId)
+		if(!req.decoded.admin/* || req.decoded.companyId != req.params.companyId*/)
 			return next(new Error("You are not authorized to view this company"));
 		else
 		{
-			Companies.findById(req.params.companyId)
-				.populate("comments.author")
-				.exec(function(err, company){
+			if(req.params.companyId == "names")
+			{
+				Companies.find({},{name:1}).exec(function(err, companies)
+				{
 					if(err)
 					{
-						console.log("ERROR IN FIND - GET DATA/COMPANIES/COMPANYID: ",  err);
-						//Is this the only error that findById will throw? Not finding the entry??
-						return next(new Error("No company in database with ID# " + req.params.companyId));
+						console.log("ERROR IN FIND - GET/COMPANIES/COMPANYID (NAMES ONLY)",  err);
+						return next(new Error("Error pulling company names...sorry!"));
 					}
-					res.json(company);
-			});
+					res.json(companies);
+					return;
+				});
+			}
+			else
+			{
+				Companies.findById(req.params.companyId)
+					.populate("comments.author")
+					.exec(function(err, company){
+						if(err)
+						{
+							console.log("ERROR IN FIND - GET DATA/COMPANIES/COMPANYID: ",  err);
+							//Is this the only error that findById will throw? Not finding the entry??
+							return next(new Error("No company in database with ID# " + req.params.companyId));
+						}
+						res.json(company);
+				});
+			}
 		}
 	})
 	//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐

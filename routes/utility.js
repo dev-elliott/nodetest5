@@ -27,6 +27,7 @@
 	//How to declare a lookup table that saves the values and can be accessed across the server...?
 	//global.lookupTable = {};
 	//exports.lookupTable = lookupTable;
+
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ VERIFICATION / TOKENS																			//╣ 
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -49,7 +50,15 @@
 					//We have a token, but it isn't verified. 
 					//Either an invalid signature (unlikely) or expired.
 					if(err.name == 'TokenExpiredError')
+					{
+
 						console.log("The token has expired, sorry");
+						//When you create a new Error and pass it a param, it sets that string to "message"
+						var error = new Error("tokenexpired");
+						error.status = 401; //401 is not authorized
+						//So we're returning {error} with .message (= "token expired") and .status (= 401)
+						return next(error);
+					}
 					//Prompt the user to log in again
 					//Make sure angular knows you've been logged out (rootscope broadcast??)
 					var err = new Error("You are not authenticated per verifyOrdinaryUser");
@@ -233,73 +242,124 @@
 			break;
 		}
 	}
-//
-	// exports.generateLookup = function()
-	// {
-	// 	console.log("Generating lookup table...");
-	// 	Users.find({}, {firstname:1, lastname:1}).exec(function (err, users){
-	// 		for(user in users)
-	// 		{
-	// 			lookupTable[user._id] = (user.firstname + " " + user.lastname);
-	// 			console.log(user._id + " , " + user.firstname+ " , " + user.lastname);
-	// 		}
-	// 		Companies.find({}, {name:1}).exec(function (err, cos){
-	// 			for(co in cos)
-	// 			{
-	// 				lookupTable[co._id] = co.name;
-	// 			}
-	// 			Jobs.find({}, {name:1, jobNumber:1, status:1}).exec(function (err, jobs){
-	// 				for(job in jobs)
-	// 				{
-	// 					lookupTable[job._id] = {name: job.name, number: job.jobNumer, status:job.status};
-	// 					//lookupTable[job._id].number = jobs.jobNumber;
-	// 					//lookupTable[job._id].status = jobs.status;
-	// 				}
-	// 				console.log("completed lookup with length=", lookupTable.length);
-	// 			});
-	// 		});
-	// 	});
-	// };
 
-	// exports.updateLookupWithObj = function(type, id, obj)
-	// {
-	// 	switch(type)
-	// 	{
-	// 		case("User"):
-	// 			lookupTable[id] = (obj.firstname + " " + obj.lastname);
-	// 		break;
-	// 		case("Company"):
-	// 			lookupTable[id] = obj.name;
-	// 		break;
-	// 		case("Job"):
-	// 			lookupTable[id] = {name: obj.name, number: obj.jobNumer, status:obj.status};
-	// 			//lookupTable[id].number = obj.jobNumber;
-	// 			//lookupTable[id].status = obj.status;
-	// 		break;
-	// 	}
-	// }
 
-	// exports.updateLookupById = function(type, id)
-	// {
-	// 	switch(type)
-	// 	{
-	// 		case("User"):
-	// 			Users.findById(id, {firstname:1, lastname:1}).exec(function(err, user){
-	// 				lookupTable[id] = (user.firstname + " " + user.lastname);
-	// 			});
-	// 		break;
-	// 		case("Company"):
-	// 			Companies.findById(id, {name:1}).exec(function(err, co){
-	// 				lookupTable[id] = co.name;
-	// 			});
-	// 		break;
-	// 		case("Job"):
-	// 			Jobs.findById(id, {name:1, jobNumber:1, status:1}).exec(function (err, job){
-	// 				lookupTable[id] = {name: job.name, number: job.jobNumer, status:job.status};
-	// 				//lookupTable[id].number = job.jobNumber;
-	// 				//lookupTable[id].status = job.status;
-	// 			});
-	// 		break;
-	// 	}
-	// }
-//
+//╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
+//╠ UTILITY FUNCS																					//╣ 
+//╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
+	exports.setEmployee = function(oldCompanyId, newCompanyId, userId)
+	{
+		console.log("Here is the oldcompanyId:", oldCompanyId);
+		console.log("Here is the newcompanyId:", newCompanyId);
+
+
+		//This is enraging faggotry but it should work.
+		//Right now, the set company dropdown provides a blank option...
+		//If that's selected it sends the newCompanyId as the entire current company.
+		//So lets just check if newCompanyId is an object, and if so, just pass the ID.
+		if(newCompanyId === Object(newCompanyId))
+		{
+			console.log("blank case detected...");
+			newCompanyId = newCompanyId._id;
+			console.log(newCompanyId + " is our new data to send");
+		}
+
+
+		if(oldCompanyId === newCompanyId)
+		{
+			console.log("No employment change to be made");
+			return;
+		}
+		else
+		{
+			//If there is an old company provided we need to remove the employee
+			if(oldCompanyId && oldCompanyId != null)
+			{
+				removeEmployee(oldCompanyId, userId);
+			}
+
+			//If there is a new company provided we need to add the employee
+			if(newCompanyId && newCompanyId != null)
+			{
+				addEmployee(newCompanyId, userId);
+			}
+		}
+	}
+
+	function addEmployee(companyId, userId)
+	{
+		//Each company knows who it's employees are; we call this function when we (the admin)
+		//sets the users company (ID) from the Dashboard:Users
+
+
+		//This will grab the company by ID and load all it's employees (array of user ids)
+		//and add the new employee user ID if it doesn't already exist in the list.
+
+		Companies.findById(companyId)
+			.exec(function(err, company)
+			{
+				console.log("We found this company that you want to fuck with: " + company._id);
+				console.log(company.employees);
+				if(err) { console.log("ERROR: Couldn't load company to add employee"); return; }
+				
+				//Check to see if the user is already in the list. If so, return; we're done here
+				for (var i = 0; i < company.employees.length; i++) {
+			        if (company.employees[i].equals(userId)) {
+			            console.log("Employee already in Company.");
+						return;
+			        }
+			    }
+				
+
+
+				//If we made it this far, employee needs to be added:
+				console.log("Adding employee to company.");
+				company.employees.push(userId);
+				company.save(function(err) 
+				{
+					if(err) { console.log("ERROR: Saving company"); return; }
+					else {console.log("Saved new employee to company"); return; }
+
+				});
+				
+
+			});
+	};	
+	function removeEmployee(companyId, userId)
+	{
+		//Each company knows who it's employees are; we call this function when we (the admin)
+		//change the users company (ID) from the Dashboard:Users
+
+
+		//This will grab the company by ID and load all it's employees (array of user ids)
+		//and add the new employee user ID if it doesn't already exist in the list.
+
+		Companies.findById(companyId)
+			.exec(function(err, company)
+			{
+				if(err) { console.log("ERROR: Couldn't load company to add employee"); return; }
+
+				//If there are no employees yet (null) then theres nothing to do here
+				if(!company.employees) {console.log("No employees in company, noting to remove."); return;}
+				
+				var index = company.employees.indexOf(userId);
+				if(index < 0 || index == null) { console.log("User isn't listed as an employee, all done here"); return; }
+				if(company.employees[index].equals(userId))
+				{
+					if(index > -1) company.employees.splice(index, 1);
+
+					console.log("removing employee from company.");
+					company.save(function(err) 
+					{
+						if(err) { console.log("ERROR: Saving company"); return; }
+						else {console.log("Saved new employee removal from company"); return; }
+
+					});
+				}
+				else
+				{
+					console.log("employee isnt in company.");
+				}
+
+			});
+	};

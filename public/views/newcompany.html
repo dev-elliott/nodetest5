@@ -1,0 +1,43 @@
+<div class="ngdialog-message">
+    <div class="">
+        <h3>New company data</h3>
+    </div>
+    <div class="">&nbsp;</div>
+    <div class="">
+        <form ng-submit="saveNewCompany()">
+            <div class="form-group">
+                <label class="sr-only" for="username">Company Name</label>
+                <input type="text" class="form-control input-sm" id="companyName" placeholder="Winner Co." ng-model="companyData.name">
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="username">Address 1</label>
+                <input type="text" class="form-control input-sm" id="address1" placeholder="1337 Street" ng-model="companyData.address1">
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="username">Address 2 (optional)</label>
+                <input type="text" class="form-control input-sm" id="address2" placeholder="Suite 1" ng-model="companyData.address2">
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="username">City</label>
+                <input type="text" class="form-control input-sm" id="city" placeholder="Seattle" ng-model="companyData.city">
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="username">State</label>
+                <input type="text" class="form-control input-sm" id="state" placeholder="AK" ng-model="companyData.state">
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="username">Zip code</label>
+                <input type="text" class="form-control input-sm" id="zip" placeholder="99999" ng-model="companyData.zip">
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="username">Phone number</label>
+                <input type="text" class="form-control input-sm" id="zip" placeholder="425-123-4567" ng-model="companyData.phone">
+            </div>
+            <button type="submit" class="btn btn-info btn-sm">Save</button>
+            <button type="button" class="btn btn-default btn-sm" ng-click=closeThisDialog("Cancel")>Cancel</button> &nbsp; &nbsp;
+        </form>
+    </div>
+    <div>
+
+    </div>
+</div>

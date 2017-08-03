@@ -2,7 +2,6 @@
 <html ng-app="anguApp">
 <body>
 
-  <h5 class="media-heading">Admin data access</h5>
   <div class="container-fluid">
 
 
@@ -110,8 +109,8 @@
       <!-- USERS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
       <!-- USERS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
-    <md-tab label="Users">
-      <div ng-controller="UserControl">
+    <div ng-controller="UserControl">
+      <md-tab ng-if='isAdmin' label="Users">
       <div ng-if="usersLoaded == -1"><h3>{{message}}</h3></div>
       <div ng-if="usersLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
       <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>
@@ -129,7 +128,11 @@
               <span placeholder="First name" editable-text="user.firstname" e-name="firstname" e-form="rowform" e-required>{{user.firstname || 'empty' }}</span>
               <span placeholder ="Last name" editable-text="user.lastname" e-name="lastname" e-form="rowform" e-required>{{user.lastname || 'empty' }}</span>
             </td>
-            <td><span editable-text="user.company" e-name="company" e-form="rowform" e-required>{{ user.company || 'empty' }}</span></td>
+            <td>
+              <span href="#" editable-select="user.company" e-name="company" e-form="rowform" e-required e-ng-options="name._id as name.name for name in companyNames">
+                {{ShowNames(user) || 'empty'}}
+              </span>
+            </td>
             <td>{{user.createdAt | date}}</td>
             <td style="white-space: nowrap">
             <!-- form -->
@@ -160,15 +163,15 @@
             </td>
           </tr>
       </table>
-      </div>
-    </md-tab>
+      </md-tab>
+    </div>
 
       <!-- COMPANIES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
       <!-- COMPANIES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
       <!-- COMPANIES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
-    <md-tab label="Companies">
-      <div ng-controller="CompanyControl">
+    <div ng-controller="CompanyControl">
+      <md-tab ng-if='isAdmin' label="Companies">
       <div ng-if="companiesLoaded == -1"><h3>{{message}}</h3></div>
       <div ng-if="companiesLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
       <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>
@@ -181,7 +184,11 @@
             <th>ZIP</th>
             <th>JOBS (OPEN)</th>
             <th>EMPLOYEES</th>
-            <th>ACTIONS</th>
+            <th>ACTIONS
+              <span class="pull-right glyphicon glyphicon-plus-sign" ng-click='createNewCompany()' ng-if='isAdmin'>
+              <md-tooltip md-direction="top">Add new job</md-tooltip>
+              </span>
+            </th>
           </tr>
           <tr class="fluid-container" ng-repeat="company in companies">
             <td><span>{{ company.name || 'empty' }}</span></td>
@@ -190,7 +197,7 @@
             <td><span>{{ company.state || 'empty' }}</span></td>
             <td><span>{{ company.zip || 'empty' }}</span></td>
             <td>{{company.jobs.length || '0'}} ({{GetOpenJobsCount(company)}})</td>
-            <td>{{company.employees.length}}</td>
+            <td>*TODO*</td>
             <td style="white-space: nowrap">
             <!-- form -->
               <form editable-form name="rowform" onaftersave="SaveUser($data, user._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
@@ -223,8 +230,8 @@
             </td>
           </tr>
       </table>
-      </div>
       </md-tab>
+      </div>
     </md-tabs>
   </md-content>
 

@@ -42,7 +42,7 @@
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ DATABASE                                                                                          ╣
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
-  mongoose.connect(url/*, {user:"admin", pass:"ep0z15"}*/);
+  mongoose.connect(url/*, {user:"admin", pass:"xxxx"}*/); //For production server, we setup mongodb authentication. We will pass those credentials in here
   var db = mongoose.connection;
   db.on('error', console.error.bind(console, 'database connection error:'));
   db.once('open', function() {

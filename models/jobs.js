@@ -18,7 +18,7 @@ var commentSchema = new Schema({
 }, {timestamps: true});
 
 var specSchema = new Schema({
-	psi: {type: Number, required: true },
+	psi: {type: Number},
 	run: Number
 }, {timestamps: true});
 

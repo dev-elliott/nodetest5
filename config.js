@@ -8,7 +8,7 @@
   //
 //└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 module.exports = {
-	'baseURL'	: 'https://localhost:3443/',
+	'baseURL'	: 'https://localhost:8080/',
 	'secretKey'	: '1337-1134-80085-99',
-	'mongoUrl'	: 'mongodb://localhost:27017/apex' //DATABASE NAME (db use) = apex
+	'mongoUrl'	: 'mongodb://127.0.0.1:27017/apex' //DATABASE NAME (db use) = apex
 }

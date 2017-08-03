@@ -34,20 +34,21 @@
   var app           = express();
 
   //Secure traffic only
-  app.all('*', function(req, res, next) {
-    if(req.secure) { return next(); }
-    res.redirect('https://'+req.hostname+':'+app.get('secPort')+req.url);
-  });
+  // app.all('*', function(req, res, next) {
+  //   if(req.secure) { return next(); }
+  //   res.redirect('https://'+req.hostname+':'+app.get('secPort')+req.url);
+  // });
 
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ DATABASE                                                                                          ╣
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
-  mongoose.connect(url);
+  mongoose.connect(url/*, {user:"admin", pass:"ep0z15"}*/);
   var db = mongoose.connection;
   db.on('error', console.error.bind(console, 'database connection error:'));
   db.once('open', function() {
     console.log("Successfully connected to our database.");
   });
+
   
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ MISC MIDDLEWARE                                                                                   ╣

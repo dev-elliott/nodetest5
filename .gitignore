@@ -51,3 +51,7 @@ node_modules
 bower_components
 data
 sessions
+#I ignore  node_module and bower_components because you can just npm install to get node modules and bower install to get bower components
+#this eliminates the bulk of the files i need to manage
+#package.json handles the node modules. be sure to use --save when  installing a new component to add it to the list!!
+#bower.json for bower components list. dont currently remember how to save, but its documented somewhere

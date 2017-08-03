@@ -31,10 +31,14 @@ var User = new Schema({
 	//username: String	//We will "advertise" this as their email field.
 	//password: String
 
-	//Company name provided by user. 
-	company: {type: String, required: true},
-	//Admin generated, correct company ID
-	companyId: {type: mongoose.Schema.Types.ObjectId, ref: 'Company'},
+	//When registering, the user is asked for their company name
+	//This will just be a string that we really only use to link 
+	//them to their actual company  (ref) with the 'company' field below
+	companyName: {type: String, default:''},
+
+	//Actual reference to users company (INTERNAL FIELD)
+	company: {type: mongoose.Schema.Types.ObjectId, ref: 'Company'},
+	
 	//Is this user an admin? 
 	admin: {type: Boolean, default: false},
 	firstname: { type: String, default: ''},

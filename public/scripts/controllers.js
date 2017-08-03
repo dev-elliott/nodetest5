@@ -17,9 +17,7 @@
   //  Notes:
   //
   //  Todo:
-  //    -Everything...
-  //    - NotificationControl: when we create "crendentials" variable, and ParseJWT() we first need
-  //      to verify there actually is a token, otherwise it will spit out an error to the console.
+  //    -Everything....
   //
 //└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -37,8 +35,15 @@ angular.module('anguApp')
       }
     }
 }])
-.controller('CompanyControl', ["$scope", "$stateParams", "apexFactory", function(sc, $stateParams, apexFactory) {
+
+.controller('CompanyControl', ["$scope", "$stateParams", "apexFactory", "AuthFactory", "ngDialog", function(sc, $stateParams, apexFactory, AuthFactory, ngDialog) {
   console.log("companycontrol loaded ok thanks");
+  sc.isAdmin = AuthFactory.IsAdmin();
+  if(!sc.isAdmin)
+  {
+    //User is not an admin, so let's just stop right here!
+    return;
+  }
   //Error handling
   //0=Loading, 1=Success, -1=Failed
   sc.companiesLoaded = 0;
@@ -59,39 +64,115 @@ angular.module('anguApp')
   }
   apexFactory.GetCompanies().query(
     function(response) { sc.companies = response; sc.companiesLoaded = 1;},
-    function(response) { sc.message = "Error loading Users: " + response.status + " " + response.statusText; sc.companiesLoaded = -1; });
+    function(response) { sc.message = "Error loading Companies: " + response.status + " " + response.statusText; sc.companiesLoaded = -1; });
+
+  sc.companyData = {};
+  sc.createNewCompany = function()
+  {
+    alert("Click");
+    ngDialog.open({ template: 'views/newcompany.html', scope: sc, className: 'ngdialog-theme-default'}); 
+  };
+  sc.saveNewCompany = function()
+  {
+    alert("saving that shit");
+    apexFactory.GetCompanies().save(sc.companyData, function(response)
+    {
+      alert("save success,  id (response): " + response);
+      console.log("save success,  id (response): " + response);
+    },
+    function(response)
+    {
+      console.log("Failed response saving new company: ", response);
+    });
+  };
 }])
 
-.controller('UserControl', ["$scope", "$stateParams", "apexFactory", function(sc, $stateParams, apexFactory) {
+.controller('UserControl', ["$scope", "$stateParams", "apexFactory", "AuthFactory", function(sc, $stateParams, apexFactory, AuthFactory) {
   console.log("UserControl loaded ok thanks");
-  sc.users = [];
+  sc.isAdmin = AuthFactory.IsAdmin();
+  if(!sc.isAdmin)
+  {
+    //User is not an admin, so let's just stop right here!
+    return;
+  }
+  sc.users = []; //Main variable array holding all the users we load from the database
+  sc.companyNames = {}; //This variable holds the names and IDs of the companies so we can assign new users to a company
   //Error handling
   //0=Loading, 1=Success, -1=Failed
   sc.usersLoaded = 0;
   sc.message = "Loading users...";
 
-  sc.users = apexFactory.GetUsers().query(
-    function(response) { sc.users = response; sc.usersLoaded = 1;},
-    function(response) { sc.message = "Error loading Users: " + response.status + " " + response.statusText; sc.usersLoaded = -1; });
+  //Since I don't know how to pass the database query parameters (companies.find({}, {name:1})
+  //I am using a silly trick where I pass it a specific _id param ("names") which will return just the names of all companies
+   apexFactory.GetCompanies().query(
+    {_id:"names"},
+    function(response) 
+    { 
+      sc.companyNames = response;
+    },
+    function(response) { sc.message = "Error loading Companies: " + response.status + " " + response.statusText; sc.companiesLoaded = -1; });
 
-  sc.LoadUser = function()
+
+  sc.users = apexFactory.GetUsers().query(
+    function(response) 
+    { 
+      sc.users = response; 
+
+
+      sc.usersLoaded = 1;
+    },
+    function(response) 
+    { 
+      sc.message = "Error loading Users: " + response.status + " " + response.statusText; 
+      sc.usersLoaded = -1; 
+    });
+
+
+
+
+
+  sc.ShowNames = function(user) 
   {
-    sc.user = apexFactory.GetUsers().get({_id:$stateParams._id})
-      .$promise.then(
-        function(response) { },
-        function(response) { });
-  }
+    if(user.company)
+    {
+      for(var i = 0; i < sc.companyNames.length; i++)
+      {
+        if(sc.companyNames[i]._id === user.company)
+          return sc.companyNames[i].name;
+      }
+    }
+    else
+    {
+      return "Not set";
+    }
+  };  
+
+
+
   sc.SaveUser = function(data, _id)
   {
-    //sc.user not updated yet
-    //angular.extend(sc.users[index], data)
-    console.log("Going to save new data for user ID# ", _id);
     //put to server
-    apexFactory.GetUsers().Update({_id:_id}, data);
+    apexFactory.GetUsers().Update({_id:_id}, data, function(response)
+    {
+      //Our response from the server USER:ID PUT is the updated/saved/new user data.
+      //Put that new data into the scope so the page shows the latest information, woo
+      //no more page refresh needed!
+      for(var i = 0; i < sc.users.length; i++)
+      {
+        if(sc.users[i]._id === _id)
+          sc.users[i] = response;
+      }
+    },
+    function(response)
+    {
+      //I should probably have a "toast" popup for when we fail on network calls.
+      //I like the approach SoundCloud has.....
+      // "something went wrong trying to save changes to user.....please try again"
+      console.log("Failed response updating: ", response);
+    });
   };
   sc.DeleteUser = function(_id)
   {
-
     console.log("Going to delete user with ID# ", _id);
   };
 }])
@@ -118,14 +199,10 @@ angular.module('anguApp')
   }
   sc.SaveJob = function(data, _id)
   {
-    //sc.user not updated yet
-    //gular.extend(sc.jobs[index], data)
-    //var id = sc.jobs[index]._id;
-    console.log("Going to save new data for job ID# ", _id);
-    console.log(JSON.stringify(data, undefined, 2));
-    console.log("^ json stringify ==== v log string");
-    console.log(data);
-    //put to server
+    //MYSTERY........
+    //This updates our client side data...
+    //Even though I'm not updating it in callback ???
+    //Refer to User edit
     apexFactory.GetJobs().Update({_id:_id}, data);
 
   };
@@ -135,11 +212,6 @@ angular.module('anguApp')
 
   };
 
-   // sc.statuses = [
-   //  {'Pending'},
-   //  {'Postponed'},
-   //  {'Cancelled'},
-   //  {'Complete'}];
 
   sc.statuses = ['Pending', 'Cancelled', 'Complete', 'Postponed', 'In-progress'];
   sc.ShowStatus = function(job) 
@@ -150,6 +222,7 @@ angular.module('anguApp')
 
 .controller('NotificationControl', ["$scope", "$stateParams", "apexFactory", "AuthFactory", function(sc, $stateParams, apexFactory, AuthFactory) {
   console.log("loaded notification controller");
+  sc.isAdmin = AuthFactory.IsAdmin();
   sc.notifications = {};
   sc.unclaimedUsers = {};  
   //Error handling
@@ -157,16 +230,27 @@ angular.module('anguApp')
   sc.notificationsLoaded = 0;
   sc.message = "Loading...";
 
-  //Check if we're an admin so know to get unclaimed users/jobs
-  var credentials = AuthFactory.ParseJwt();
-
 
   apexFactory.GetNotifications().query(
-     function(response) { sc.notifications = response; sc.notificationsLoaded = 1; },
-     function(response) { console.log("notify error: ", response); sc.message = "Error loading notifications: " + response.status + " " + response.statusText; sc.notificationsLoaded = -1});
+     function(response) 
+     { 
+      //Expected response from query:
+      //      JSON Array [ {count:0} , {result: Success} ]
+      // OR   JSON Array with notification data.
+      if(response[0].count == 0)
+      {
+        sc.notifications = {};
+      }
+      else 
+        sc.notifications = response;
+
+      //Whether we got notifications or none, we successfully loaded them from the server
+      sc.notificationsLoaded = 1; 
+     },
+     function(response) { /*console.log("notify error: ", response);*/ sc.message = "Error loading notifications: " + response.status + " " + response.statusText; sc.notificationsLoaded = -1});
   
   //For admin only...
-  if(credentials.admin)
+  if(sc.isAdmin)
   {
     apexFactory.GetUnclaimedUsers().query(
        function(response) { sc.unclaimedUsers = response; sc.notificationsLoaded = 1; },
@@ -175,9 +259,13 @@ angular.module('anguApp')
 
   sc.DeleteNotifications = function()
   {
-    apexFactory.GetNotifications().Delete(
-      function(response) { alert("Success"); alert(JSON.stringify(response, undefined, 2)); },
-      function(response) { alert("FAILURE"); alert(JSON.stringify(response, undefined, 2)); });
+    //Don't send the request to server if there aren't any notifications to delete
+    if(sc.notifications.length > 0)
+    {
+      apexFactory.GetNotifications().Delete(
+        function(response) { if(response.result == "Success") sc.notifications = {}; },
+        function(response) { alert("FAILURE"); alert(JSON.stringify(response, undefined, 2)); });
+    }
   };
 }])
 
@@ -238,36 +326,83 @@ angular.module('anguApp')
   sc.LogDetails($stateParams._id);
 }])
 
-.controller('NewJobControl', ['$scope', function(sc){
+.controller('NewJobControl', ['$scope', 'AuthFactory', 'apexFactory', function(sc, AuthFactory, apexFactory){
   console.log("loaded new job controller");
-
   //This variable is our model.
   //We can actually add new fields/properties to this object from within the angular HTML code
   //Not everything has to be defined here :0
-  sc.newjob = {jobname:"", lotnumber:"", floorplan:""};
+  sc.newjob = {company:"", jobname:"", lotnumber:"", floorplan:""};
+ 
+  //If the user is an Admin, we will add an input field to select which company the new job belongs to
+  //otherwise
+  sc.isAdmin = AuthFactory.IsAdmin();
+  if(!sc.isAdmin)
+  {
+    sc.newjob.company = AuthFactory.GetCompany();
+  }
+  else
+  {
+    //We're an admin, so let's get all the possible companies we can assign this job to
+
+    //This variable holds the names and IDs of the companies we can assign this job to
+    sc.companyNames = {}; 
+
+    apexFactory.GetCompanies().query(
+      {_id:"names"},
+      function(response) 
+      { 
+        sc.companyNames = response;
+        //Add an option to add a new company on the fly here
+        sc.companyNames[sc.companyNames.length] = {_id: "Add new", name:"Add new"};
+        console.log(sc.companyNames);
+      },
+      function(response) { sc.message = "Error loading Companies: " + response.status + " " + response.statusText; sc.companiesLoaded = -1; });
+  }
+
   sc.SubmitNewJob = function() { alert("lol"); };
 }])
 
-.controller('HeaderControl', ['$scope', '$state', '$rootScope', 'ngDialog', 'AuthFactory', function ($scope, $state, $rootScope, ngDialog, AuthFactory) {
+.controller('HeaderControl', ['$scope', '$localStorage', '$state', '$rootScope', 'ngDialog', 'AuthFactory', function ($scope, $localStorage, $state, $rootScope, ngDialog, AuthFactory) {
+  //there is some code duplication between HeaderControl and LoginControl, and I think that's okay.
+  //Essentially you can log in/out from two seperate locations; and we want to make sure they both work
+  //and affect each other when used. Logging in from one location needs to let the other lcoation know
+  //the option is now to log out and vice versa.
+  //My only concern here is when I laun
+  console.log("Header controller LOADED");
 
-  $scope.loggedIn = false;
-  $scope.username = '';
+  //I cannot imagine the header control actually needs all this information, but it's everything we can grab from the authfactory
+  $scope.user = {};
+  $scope.user.loggedIn = false;
+  $scope.user.isAuthenticated = false;
+  //$scope.user.isAdmin = false;
+  $scope.user.username = '';
+  //$scope.user.authToken = null;
+  //$scope.user._id = null;
+  $scope.loginData = $localStorage.getObject('userinfo','{}');
 
   if(AuthFactory.IsAuthenticated())
   {
-    $scope.loggedIn = true;
-    $scope.username = AuthFactory.GetUsername();
+    $scope.user.loggedIn = true;
+    $scope.user.username = AuthFactory.GetUsername();
   }
 
   $scope.OpenLogin = function() { 
-    ngDialog.open({ template: 'views/login.html', scope: $scope, className: 'ngdialog-theme-default', controller: "LoginControl"}); };
+    ngDialog.open({ template: 'views/login.html', scope: $scope, className: 'ngdialog-theme-default'}); };
 
+  $scope.doLogin = function() {
+    if($scope.rememberMe)
+       $localStorage.storeObject('userinfo',$scope.loginData);
+
+    AuthFactory.Login($scope.loginData);
+    ngDialog.close();
+
+  };
 
   $scope.LogOut = function() 
   {
       AuthFactory.Logout();
-      $scope.loggedIn = false;
-      $scope.username = '';
+      $scope.user.loggedIn = false;
+      $scope.user.username = '';
   };
 
   $scope.StateIs = function(currentState) { return $state.is(currentState); };
@@ -275,21 +410,54 @@ angular.module('anguApp')
 
   //Event handler/listener for a rootScope BROADCAST
   $rootScope.$on('login:Successful', function() {
-    $scope.loggedIn = AuthFactory.IsAuthenticated();
-    $scope.username = AuthFactory.GetUsername();
+    $scope.user.loggedIn = true;
+    $scope.user.username = AuthFactory.GetUsername();
   });
 
   $rootScope.$on('registration:Successful', function() {
-    $scope.loggedIn = AuthFactory.IsAuthenticated();
-    $scope.username = AuthFactory.GetUsername();
+    $scope.user.loggedIn = AuthFactory.IsAuthenticated();
+    $scope.user.username = AuthFactory.GetUsername();
+  });
+
+  $rootScope.$on('logout:Successful', function() {
+    $scope.user.loggedIn = false;
+    $scope.user.username = '';
+  });
+
+  $rootScope.$on('token:Expired', function() {
+    //Our token has expired, we can no longer access the server (where auth is required)
+    //So lets see if we either have userinfo saved in local storage and re-login
+    //or if not, just log out
+    console.log("We caught broadcast 'token:Expired' in headerControl!, groovy");
   });
 }])
 
-.controller('LoginControl', ['$scope', 'ngDialog', '$localStorage', 'AuthFactory', function ($scope, ngDialog, $localStorage, AuthFactory) {
-    
-    //this should be encrypted
+.controller('LoginControl', ['$scope', '$rootScope', 'ngDialog', '$localStorage', 'AuthFactory', function ($scope, $rootScope, ngDialog, $localStorage, AuthFactory) {
+    //there is some code duplication between HeaderControl and LoginControl, and I think that's okay.
+    //Essentially you can log in/out from two seperate locations; and we want to make sure they both work
+    //and affect each other when used. Logging in from one location needs to let the other lcoation know
+    //the option is now to log out and vice versa.
+
+
+
+    console.log("Login controller LOADED");
+    //this should be encrypted [we would decrypt here]
     $scope.loginData = $localStorage.getObject('userinfo','{}');
-    
+
+    $scope.user = {};
+    $scope.user.loggedIn = false;
+
+
+    if(AuthFactory.IsAuthenticated())
+    {
+      $scope.user.loggedIn = true;
+    }
+
+    $scope.OpenLogin = function() { 
+      ngDialog.open({ template: 'views/login.html', scope: $scope, className: 'ngdialog-theme-default'}); 
+    };
+
+
     $scope.doLogin = function() {
         if($scope.rememberMe)
            $localStorage.storeObject('userinfo',$scope.loginData);
@@ -303,6 +471,24 @@ angular.module('anguApp')
     $scope.openRegister = function () {
         ngDialog.open({ template: 'views/register.html', scope: $scope, className: 'ngdialog-theme-default', controller:"RegisterController" });
     };
+
+    $scope.LogOut = function() 
+    {
+      AuthFactory.Logout();
+      $scope.user.loggedIn = false;
+      $scope.user.username = '';
+    };
+
+  
+
+    $rootScope.$on('login:Successful', function() {
+      $scope.user.loggedIn = true;
+      $scope.user.username = AuthFactory.GetUsername();
+    });
+    $rootScope.$on('logout:Successful', function() {
+      $scope.user.loggedIn = false;
+      $scope.user.username = '';
+    });
 }])
 
 .controller('RegisterController', ['$scope', 'ngDialog', '$localStorage', 'AuthFactory', function ($scope, ngDialog, $localStorage, AuthFactory) {
@@ -325,24 +511,19 @@ angular.module('anguApp')
   sc.notes = [];
    apexFactory.GetTestData().query().$promise.then(
     function(response) { sc.notes = response; 
-      console.log(response);
-      console.log(sc.notes[0].body);
-      console.log(sc.notes[1].body);
+      //console.log(response);
+      //console.log(sc.notes[0].body);
+      //console.log(sc.notes[1].body);
 
 
     },
     function(response) { alert("Error loading Users: " + response.status + " " + response.statusText); });
-
-
-
-
 }])
 
 .controller('RequestController', ['$scope', 'apexFactory', 'AuthFactory', '$localStorage', function(sc, apexFactory, AuthFactory, $localStorage) {
-
-  // Controller for sending a new inquiry. This can probably go in NotificationController later.
-  // TODO: Have request.company, .name, and .email populate automatically when user is logged in.
-
+  console.log("REQUESTCONTROLLER LOADED");
+  
+  //Model for the inquiry/request data we'll fill in and submit
   sc.request = {
     company: "",
     name: "",
@@ -350,25 +531,30 @@ angular.module('anguApp')
     comment: ""
   }
 
-  // If user is logged in, fill in sc.request details automatically.
-  if(sc.$parent.loggedIn) {
-    console.log('Accessing sc.$parent.loggedIn.');
+  sc.userdata = AuthFactory.GetUserData();
+  console.log("Here is the sc.userdata  from AuthFactory.GetUserData");
+  console.log(sc.userdata);
+  if(sc.userdata)
+  {
+    console.log("Hey we are real people");
+    sc.loggedIn = true;
+    sc.username = sc.userdata.username;
 
-    // Parse the token to get userId.
-    var credentials = AuthFactory.ParseJwt();
     var myDetails = {};
 
-    apexFactory.GetUsers().get({_id: credentials._id}).$promise.then(
+    apexFactory.GetUsers().get({_id: sc.userdata._id},{notifications:0}).$promise.then(
       function(response) {
         myDetails = response; 
         console.log('User details: ', myDetails);
 
-        sc.request.company = myDetails.company;
+        if(myDetails.company)sc.request.company = myDetails.company.name; //Awesome. When I get user, I populate the company with just the name (and ofc we get the ID)
+        else sc.request.company = "Not set";
         sc.request.name = myDetails.firstname + ' ' + myDetails.lastname;
         sc.request.email = myDetails.username;
       },
       function(response) {
-        console.log('you are bad');
+        console.log("Error getting your data, must not be logged in?:");
+        console.log(response);
       }
     );
   }
@@ -400,6 +586,5 @@ angular.module('anguApp')
     marker.setMap(map);
   }
   
-  init_map();
-
+  //init_map();
 }]);

@@ -57,7 +57,7 @@ angular.module('anguApp')
 
 	apexFac.GetJobs = function()
 	{
-		return $resource(baseURL + "jobs/:_id", null, {'Update':{method:'PUT'}});
+		return $resource(baseURL + "jobs/:_id", null, {'Update':{method:'PUT'}, 'Save':{method:'POST'}});
 	}
 
 	apexFac.GetCompanies = function()

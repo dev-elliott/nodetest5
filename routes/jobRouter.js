@@ -77,6 +77,13 @@ jobRouter.use(bodyParser.json());
 	// 	---No JSON data provided. I throw my own error below, immediately when that's detected.
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.post(function(req, res, next) {
+		console.log("so ur tryna submit a new job...data below");
+		console.log(req.body);
+		console.log("req.body 0 then 1 ..............");
+
+		console.log(req.body[0]);
+		console.log(req.body[1]);
+
 		//Manually submitting a new job as an Admin:
 
 		if(req.decoded.admin)
@@ -88,35 +95,38 @@ jobRouter.use(bodyParser.json());
 			var oid = mongoose.Types.ObjectId(req.decoded._id.toString());
 			job.submitBy = oid;
 
-			if(req.body[0].companyId)//Existing company selected
+			if(req.body[0].company)//Existing company selected
 			{
 				//Make new job with req.body[1]
-				
-				job.companyId = req.body[0].companyId;
+				console.log("Trying to save this job:");
+				console.log(job);
+				job.company = req.body[0].company;
 				job.save(function(err){
 					if(err) return(next(err));
 					res.json({result:job._id});
 				});
 
 			}
-			else //We are making a new company first
-			{
-				var company = Companies(req.body[0]);
-				//Save our company so we can get it's id
-				company.save(function(err, updatedCo){ 
-					if(err) return(next(err));
-					//Add the company id to the job, then save it
-					job.companyId = updatedCo._id;
-					job.save(function(err, updatedJob){
-						if(err) return(next(err));
-						//Finally, save the company again after pushing the job
-						updatedCo.jobs.push(updatedJob);
-						updatedCo.save(function(err){
-							if(err) return(next(err));
-						});
-					});
-				});
-			}
+
+			//QUICK ADD CURRENTLY DISABLED
+			// else //We are making a new company first
+			// {
+			// 	var company = Companies(req.body[0]);
+			// 	//Save our company so we can get it's id
+			// 	company.save(function(err, updatedCo){ 
+			// 		if(err) return(next(err));
+			// 		//Add the company id to the job, then save it
+			// 		job.companyId = updatedCo._id;
+			// 		job.save(function(err, updatedJob){
+			// 			if(err) return(next(err));
+			// 			//Finally, save the company again after pushing the job
+			// 			updatedCo.jobs.push(updatedJob);
+			// 			updatedCo.save(function(err){
+			// 				if(err) return(next(err));
+			// 			});
+			// 		});
+			// 	});
+			// }
 		}
 
 

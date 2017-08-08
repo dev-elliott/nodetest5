@@ -1,10 +1,50 @@
+
+So I'm trying to refresh the token/login when it's expired.
+I have the server return a 401 error, message="tokenexpired" and then have the server check for that response.
+There are some interesting node modules available for this, or i can look into "angular interceptors"
+they are like middleware for all your server calls. i could listen for a 401 tokenexpired and then relogin and
+resend the intial request perhaps? sounds gg_pi
+
+
+
+
+
+
+Leftoff...
+
+How exactly is REMEMBER ME saving my data when I login??
+It clearly is being called on a new registration, but I don't that happening on a normal login...
+wtf?
+
+//Gotta see where else this is being called and nip that in the anus
+    authFac.ParseJwt = function() {
+That should not be used outside the authFactory as far as I'm concerned....
+
+
 ROADMAP
+
+>Figure out how to get data from a separate controller...
+--> HeaderController loads on all pages, but unless you "reload" and specifically use ng-controller=HeaderController
+--> in your HTML, you have no way of accessing it within your page / controller. We need to be able to do this so
+--> we can get Auth data (isLoggedIn, isAdmin, etc) at our own convenience. Currently needed to NewJob page
+--> isAdmin = select what company this job belongs to ... isLoggedIn = populate your company data, etc etc.
+:::::::> It seems the best practice is to move that information into a service/factory and import that service.
+
 
 > Complete notification generation (server side)
 > 'Refreshing' our page when data changes (dashboard)
 --> How to update and "notify" the user of new notifications?
+--> We know how to update when WE ourself make a change (deleting all notifications) we get returned a server
+	response and can act accordingly (delete job with server.response._id) ... but how do we update when
+	another user makes changes or triggers a new notification generation. Serverside broadcasting?
+
+
 > Create a way to "claim" or link users with companies
 --> Allow admin to set company via a dropdown in the Users tab. (also applies to detail/user page)
+--> NOW! I need to link the user with the company (employee count) same with jobs....
+
+
+
 > Create front end pages:
 --> NewJob submit -- both user and admin views/functionality
 --> NewRequest submit
@@ -19,6 +59,8 @@ ROADMAP
 
 //TODO
 
+If for some reason we don't intitally connect (or at somepoint during runtime, lose connection) to the databaase
+we need to try and reconnect...do this without shutting down / restarting the server.
 
 Ecomonical data transfer:
 Make sure I'm getting(and sending) the minimum amount of JSON data sent from the server per request.

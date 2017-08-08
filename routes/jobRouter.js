@@ -48,22 +48,22 @@ jobRouter.use(bodyParser.json());
 				//.populate('comments.author')
 				.populate('company')
 				.populate('submitBy')
-				.exec(function (err, job) {
+				.exec(function (err, jobs) {
 					if(err) { return next(new Error("ERROR IN FIND - GET/JOBS: ")); }
-					res.json(job);
+					res.json(jobs);
 			});
 		}
 		else
 		{
 			//Not admin, return jobs for your company only
-			var companyId = mongoose.Types.ObjectId(req.decoded.companyId.toString());
+			var companyId = mongoose.Types.ObjectId(req.decoded.company.toString());
 			Jobs.find({company: companyId})
 				.populate('company')
 				.populate('submitBy')
-				.exec(function (err, job) {
+				.exec(function (err, jobs) {
 					if(err) { return next(new Error("ERROR IN FIND - GET/JOBS: ")); }
 					if(!jobs || jobs.length < 1) res.json({result:"Success", count:0});
-					res.json(job);
+					res.json(jobs);
 			});
 		}
 	})
@@ -77,6 +77,13 @@ jobRouter.use(bodyParser.json());
 	// 	---No JSON data provided. I throw my own error below, immediately when that's detected.
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.post(function(req, res, next) {
+		console.log("so ur tryna submit a new job...data below");
+		console.log(req.body);
+		console.log("req.body 0 then 1 ..............");
+
+		console.log(req.body[0]);
+		console.log(req.body[1]);
+
 		//Manually submitting a new job as an Admin:
 
 		if(req.decoded.admin)
@@ -88,35 +95,38 @@ jobRouter.use(bodyParser.json());
 			var oid = mongoose.Types.ObjectId(req.decoded._id.toString());
 			job.submitBy = oid;
 
-			if(req.body[0].companyId)//Existing company selected
+			if(req.body[0].company)//Existing company selected
 			{
 				//Make new job with req.body[1]
-				
-				job.companyId = req.body[0].companyId;
+				console.log("Trying to save this job:");
+				console.log(job);
+				job.company = req.body[0].company;
 				job.save(function(err){
 					if(err) return(next(err));
 					res.json({result:job._id});
 				});
 
 			}
-			else //We are making a new company first
-			{
-				var company = Companies(req.body[0]);
-				//Save our company so we can get it's id
-				company.save(function(err, updatedCo){ 
-					if(err) return(next(err));
-					//Add the company id to the job, then save it
-					job.companyId = updatedCo._id;
-					job.save(function(err, updatedJob){
-						if(err) return(next(err));
-						//Finally, save the company again after pushing the job
-						updatedCo.jobs.push(updatedJob);
-						updatedCo.save(function(err){
-							if(err) return(next(err));
-						});
-					});
-				});
-			}
+
+			//QUICK ADD CURRENTLY DISABLED
+			// else //We are making a new company first
+			// {
+			// 	var company = Companies(req.body[0]);
+			// 	//Save our company so we can get it's id
+			// 	company.save(function(err, updatedCo){ 
+			// 		if(err) return(next(err));
+			// 		//Add the company id to the job, then save it
+			// 		job.companyId = updatedCo._id;
+			// 		job.save(function(err, updatedJob){
+			// 			if(err) return(next(err));
+			// 			//Finally, save the company again after pushing the job
+			// 			updatedCo.jobs.push(updatedJob);
+			// 			updatedCo.save(function(err){
+			// 				if(err) return(next(err));
+			// 			});
+			// 		});
+			// 	});
+			// }
 		}
 
 
@@ -152,7 +162,7 @@ jobRouter.use(bodyParser.json());
 		// 	//console.log("Deleted all jobs.");
 		// 	res.json(resp);
 		// });
-		res.json("Nah");
+		res.json({result:"Nah"});
 	});
 
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -215,16 +225,17 @@ jobRouter.use(bodyParser.json());
 			if(req.decoded.companyId == job.company || req.decoded.admin)
 			{
 				//console.log("Updated job # " + job._id + " with the following data: " + JSON.stringify(req.body));
-				if(req.decoded.admin) 
-					{
-						var obj1 = {};
-						var obj2 = {};
-						obj1.id = job.company._id;
-						obj1.name = job.company.name;
-						obj2.id = job._id;
-						obj2.number = job.jobNumber;
-						Utility.notifyAdminNEW("Job-Edit", obj1, obj2);
-					}
+				//If the update is done by a non-admin, notify the admin of the changes.
+				if(!req.decoded.admin) 
+				{
+					var obj1 = {};
+					var obj2 = {};
+					obj1.id = job.company._id;
+					obj1.name = job.company.name;
+					obj2.id = job._id;
+					obj2.number = job.jobNumber;
+					Utility.notifyAdminNEW("Job-Edit", obj1, obj2);
+				}
 				res.json(job);
 			}
 			else 
@@ -316,7 +327,7 @@ jobRouter.use(bodyParser.json());
 				//Build an array of userids from:
 				//	-Every comment author id
 				//	-Job author id
-				// make sure no duplicates
+				// make sure no duplicates, use id.equals() for comparisions/checks
 				res.json(job);
 			});
 		});

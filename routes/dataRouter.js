@@ -20,83 +20,81 @@ var Jobs 		= require('../models/jobs');
 var Companies	= require('../models/companies');
 var Users		= require('../models/user');
 var Utility		= require("./utility");
+var config      = require('../config');
 var dataRouter 	= express.Router();
-
-  var config        = require('../config');
 
 dataRouter.use(bodyParser.json());
 
 
-	function generateNotificationHTML(type, obj1, obj2)
+function generateNotificationHTML(type, obj1, obj2)
+{
+
+	//console.log("Here is obj1: ", obj1);
+	//console.log("Here is obj2: ", obj2);
+	var link1;
+	var link2;
+
+	if(obj1) link1 = config.baseURL + "#/detail/" + obj1._id;
+	if(obj2) link2 = config.baseURL + "#/detail/" + obj2._id;
+
+
+	switch(type)
 	{
+		case('Job-New'):
+			//*Rainier View* has submit a *new job*
+			//obj1 = company, obj2 = job
+			if(link1 && link2)
+			{
+				return '<a href="'+link1+'">'+obj1.name+'</a> has submit a <a href="'+link2+'">new job</a>';
+			}
+		break;
 
-		//console.log("Here are are in the function faggot");
-		//console.log("Here is obj1: ", obj1);
-		//console.log("Here is obj2: ", obj2);
-		var link1;
-		var link2;
+		case('Job-Edit'):
+			//*Rainier View* has modified *job # 16-0508*
+			//*Rainier View* has modified a *pending job*
+			//obj1 = company, obj2 = job
 
-		if(obj1) link1 = config.baseURL + "#/detail/" + obj1.id;
-		if(obj2) link2 = config.baseURL + "#/detail/" + obj2.id;
+			//If the job has been confirmed by admin (and a number has been generated)
+			//jobNumber defaults to Pending but this catches other non-generated cases to be safe
+			if(obj2.jobNumber != "Pending" && obj2.jobNumber != null && obj2.jobNumber != "")
+				return '<a href="'+link1+'">'+obj1.name+'</a> has modfied job # <a href="'+link2+'">'+obj2.jobNumber+'</a>';
+			else
+				return '<a href="'+link1+'">'+obj1.name+'</a> has modified a <a href="'+link2+'">pending job</a>';
+		break;
+		
+		case('User-New'):
+			//A *new user* has been registered; *set their company*
+			return 'New user <a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has registered. ';
+		break;
 
+		case('User-Edit'):
+			//*John Doe* has edited their profile
+			return 'User <a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has modified their profile. ';
+		break;
 
-		switch(type)
-		{
-			case('Job-New'):
-				//*Rainier View* has submit a *new job*
-				//obj1 = company, obj2 = job
-				if(link1 && link2)
-				{
-					return '<a href="'+link1+'">'+obj1.name+'</a> has submit a <a href="'+link2+'">new job</a>';
-				}
-			break;
+		case('Company-New'):
+			//*Advanced Plumbing* has been registered
+			return 'New company <a href="'+link1+'">'+obj1.name+'</a> has been created.';
+		break;
 
-			case('Job-Edit'):
-				//*Rainier View* has modified *job # 16-0508*
-				//*Rainier View* has modified a *pending job*
-				//obj1 = company, obj2 = job
+		case('Company-Edit'):
+			//*Rainier View* has edited their profile.
+			return '<a href="'+link1+'">'+obj1.name+'</a> has modified their profile.';
+		break;
 
-				//If the job has been confirmed by admin (and a number has been generated)
-				//jobNumber defaults to Pending but this catches other non-generated cases to be safe
-				if(obj2.number != "Pending" && obj2.number != null && obj2.number != "")
-					return '<a href="'+link1+'">'+obj1.name+'</a> has modfied job # <a href="'+link2+'">'+obj2.number+'</a>';
-				else
-					return '<a href="'+link1+'">'+obj1.name+'</a> has modified a <a href="'+link2+'">pending job</a>';
-			break;
-			
-			case('User-New'):
-				//A *new user* has been registered; *set their company*
-				return 'New user <a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has registered. ';
-			break;
+		case('Request-New'):
+			//Anonymous has submit a *new inquiry*
+			if(!obj2) return 'An anonymous visitor has submit a <a href="'+link1+'">new inquiry</a>.';
+			//*John Doe* has submit a *new inquiry*
+			else return 'User <a href="'+link2+'">'+obj2.firstname+' '+obj2.lastname+'</a> has submit a <a href="'+link1+'">new inquiry</a>';
+		break;
 
-			case('User-Edit'):
-				//*John Doe* has edited their profile
-				return 'User <a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has modified their profile. ';
-			break;
-
-			case('Company-New'):
-				//*Advanced Plumbing* has been registered
-				return 'New company <a href="'+link1+'">'+obj1.name+'</a> has been created.';
-			break;
-
-			case('Company-Edit'):
-				//*Rainier View* has edited their profile.
-				return '<a href="'+link1+'">'+obj1.name+'</a> has modified their profile.';
-			break;
-
-			case('Request-New'):
-				//Anonymous has submit a *new inquiry*
-				if(!obj2) return 'An anonymous visitor has submit a <a href="'+link1+'">new inquiry</a>.';
-				//*John Doe* has submit a *new inquiry*
-				else return 'User <a href="'+link2+'">'+obj2.firstname+' '+obj2.lastname+'</a> has submit a <a href="'+link1+'">new inquiry</a>';
-			break;
-
-			case('Comment-New'):
-				//*John Doe* has posted a comment on job # *16-0236*
-				return '<a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has commented on job # <a href="'+link2+'">'+obj2.number+'</a>';
-			break;
-		}
+		case('Comment-New'):
+			//*John Doe* has posted a comment on job # *16-0236*
+			return '<a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has commented on job # <a href="'+link2+'">'+obj2.jobNumber+'</a>';
+		break;
 	}
+}
 
 
 dataRouter.route('/test')
@@ -130,7 +128,7 @@ dataRouter.route('/test')
 	obj1.id = mycompany._id;
 	obj1.name = mycompany.name;
 	obj2.id = myjob._id;
-	data[0] = {type:"Job-New", body:generateNotificationHTML("Job-New", obj1, obj2)}; obj1 = obj2 = {};
+	data[0] = {type:"Job-New", body:generateNotificationHTML("Job-New", mycompany, myjob)}; obj1 = obj2 = {};
 
 
 	// case('Job-Edit'):
@@ -139,52 +137,52 @@ dataRouter.route('/test')
 	obj1.name = mycompany.name;
 	obj2.id = myjob._id;
 	obj2.number = myjob.jobNumber;
-	data[1] = {body:generateNotificationHTML("Job-Edit", obj1, obj2)}; obj1 = obj2 = {};
+	data[1] = {body:generateNotificationHTML("Job-Edit", mycompany, myjob)}; obj1 = obj2 = {};
 	// //*Rainier View* has modified a *pending job*
 	obj1.id = mycompany._id;
 	obj1.name = mycompany.name;
-	obj2.id = myjob._id;
+	obj2._id = myjob._id;
 	obj2.number = "Pending";
-	data[2] = {body:generateNotificationHTML("Job-Edit", obj1, obj2)}; obj1 = obj2 = {};
+	data[2] = {body:generateNotificationHTML("Job-Edit", mycompany, obj2)}; obj1 = obj2 = {};
 
 	// case('User-New'):
 	// //A *new user* has been registered; *set their company*
 	obj1.id = myuser._id;
 	obj1.firstname = myuser.firstname;
 	obj1.lastname = myuser.lastname;
-	data[3] = {body:generateNotificationHTML("User-New", obj1, null)}; obj1 = obj2 = {};
+	data[3] = {body:generateNotificationHTML("User-New", myuser, null)}; obj1 = obj2 = {};
 
 	// case('User-Edit'):
 	// //*John Doe* has edited their profile
 	obj1.id = myuser._id;
 	obj1.firstname = myuser.firstname;
 	obj1.lastname = myuser.lastname;
-	data[4] = {body:generateNotificationHTML("User-Edit", obj1, null)}; obj1 = obj2 = {};
+	data[4] = {body:generateNotificationHTML("User-Edit", myuser, null)}; obj1 = obj2 = {};
 
 		
 	// case('Company-New'):
 	// //*Advanced Plumbing* has been registered
 	obj1.id = mycompany._id;
 	obj1.name = mycompany.name;
-	data[5] = {body:generateNotificationHTML("Company-New", obj1, null)}; obj1 = obj2 = {};
+	data[5] = {body:generateNotificationHTML("Company-New", mycompany, null)}; obj1 = obj2 = {};
 	
 	// case('Company-Edit'):
 	// //*Rainier View* has edited their profile.
 	obj1.id = mycompany._id;
 	obj1.name = mycompany.name;
-	data[6] = {body:generateNotificationHTML("Company-Edit", obj1, null)}; obj1 = obj2 = {};
+	data[6] = {body:generateNotificationHTML("Company-Edit", mycompany, null)}; obj1 = obj2 = {};
 	
 	// case('Request-New'):
 	// //Anonymous has submit a *new inquiry*
 	obj1.id = mycompany._id; //this should actually be myInquery._id but we dont have any in the system yet
-	data[7] = {body:generateNotificationHTML("Request-New", obj1, null)}; obj1 = obj2 = {};
+	data[7] = {body:generateNotificationHTML("Request-New", mycompany, null)}; obj1 = obj2 = {};
 
 	// //*John Doe* has submit a *new inquiry*
 	obj1.id = mycompany._id;
 	obj2.id = myuser._id;
 	obj2.firstname = myuser.firstname;
 	obj2.lastname = myuser.lastname;
-	data[8] = {body:generateNotificationHTML("Request-New", obj1, obj2)}; obj1 = obj2 = {};
+	data[8] = {body:generateNotificationHTML("Request-New", mycompany, myuser)}; obj1 = obj2 = {};
 
 
 	// case('Comment-New'):
@@ -194,7 +192,7 @@ dataRouter.route('/test')
 	obj1.id = myuser._id;
 	obj2.id = myjob._id;
 	obj2.number = myjob.jobNumber;
-	data[9] = {body:generateNotificationHTML("Comment-New", obj1, obj2)}; obj1 = obj2 = {};
+	data[9] = {body:generateNotificationHTML("Comment-New", myuser, myjob)}; obj1 = obj2 = {};
 
 
 
@@ -211,10 +209,6 @@ dataRouter.route('/test')
 		});
 	});
 
-
-
-
-	
 });
 
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗

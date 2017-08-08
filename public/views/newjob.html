@@ -9,52 +9,52 @@
             <form class="form-horizontal" name="newjobForm" ng-submit="SubmitNewJob()" novalidate>
                 <div ng-if="isAdmin" class="container-fluid">
                     <label>Choose plumber: </label>
-                    <select name="company" ng-model="newjob.company">
+                    <select name="company" ng-model="newjob[0].company">
                         <option ng-repeat="option in companyNames" value="{{option._id}}">{{option.name}}</option>
                     </select>
 
-                    <div ng-if="newjob.company === 'Add new'">
+                    <div ng-if="newjob[0].company === 'Add new'">
                         Quick-add not yet implemented. Please first create the new company from your Dashboard.
                     </div>
 
                     </br></br>
                 </div>
 
-                <div class="form-group" ng-class="{ 'has-error': newjobForm.jobname.$error.required && !newjobForm.jobname.$pristine}">
+                <div class="form-group" ng-class="{ 'has-error': newjobForm.name.$error.required && !newjobForm.name.$pristine}">
                     <label for="name" class="col-md-2 control-label">Job name</label>
                     <div class="col-md-6">
-                    <input type="text" class="form-control" id="jobname" name="jobname" placeholder="Enter job name" ng-model="newjob.jobname" required>
-                    <span ng-show="newjobForm.jobname.$error.required && !newjobForm.jobname.$pristine" class="help-block {display:inline}">Job name is required.</span>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter job name" ng-model="newjob[1].name" required>
+                    <span ng-show="newjobForm.name.$error.required && !newjobForm.name.$pristine" class="help-block {display:inline}">Job name is required.</span>
                     </div>
                 </div>
 
                 <div class="form-group" ng-class="{ 'has-error': newjobForm.floorplan.$error.required && !newjobForm.floorplan.$pristine}">
                     <label for="floorplan" class="col-md-2 control-label">Floor plan</label>
                     <div class="col-md-6">
-                        <input type="text" class="form-control" id="floorplan" name="floorplan" placeholder="Enter floor plan number" ng-model="newjob.floorplan" required>
+                        <input type="text" class="form-control" id="floorplan" name="floorplan" placeholder="Enter floor plan number" ng-model="newjob[1].floorplan" required>
                     </div>
                 </div>
 
-                <div class="form-group" ng-class="{ 'has-error': newjobForm.lotnumber.$error.required && !newjobForm.lotnumber.$pristine}">
-                    <label for="lotnumber" class="col-md-2 control-label">Lot number</label>
+                <div class="form-group" ng-class="{ 'has-error': newjobForm.lot.$error.required && !newjobForm.lot.$pristine}">
+                    <label for="lot" class="col-md-2 control-label">Lot number</label>
                     <div class="col-md-6">
-                        <input type="text" class="form-control" id="lotnumber" name="lotnumber" placeholder="Enter lot number" ng-model="newjob.lotnumber" required>
+                        <input type="text" class="form-control" id="lot" name="lot" placeholder="Enter lot number" ng-model="newjob[1].lot" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-10">
-                        <button type="submit" class="btn btn-primary" ng-click="SubmitNewJob()">Submit request</button>
+                        <button type="submit" class="btn btn-primary">Submit request</button>
                     </div>
                 </div>
             </form>
         </div>
         <div class="container-fluid col-md-4">
               <h3>Your Current data:</h3>
-              <p>COMPANY={{newjob.company}}</p>
-              <p>JOBNAME={{newjob.jobname}}</p>
-              <p>FLOORPLAN={{newjob.floorplan}}</p>
-              <p>LOTNUMBER={{newjob.lotnumber}}</p>
+              <p>COMPANY={{newjob[0].company}}</p>
+              <p>JOBNAME={{newjob[1].name}}</p>
+              <p>FLOORPLAN={{newjob[1].floorplan}}</p>
+              <p>LOTNUMBER={{newjob[1].lot}}</p>
             </div>
     </div>
 

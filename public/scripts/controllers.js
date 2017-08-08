@@ -394,7 +394,11 @@ angular.module('anguApp')
   //This variable is our model.
   //We can actually add new fields/properties to this object from within the angular HTML code
   //Not everything has to be defined here :0
-  sc.newjob = {company:"", jobname:"", lotnumber:"", floorplan:""};
+  sc.newjob = [{}];
+
+  //Two options here: 1) an ID number because you selected an existing company. 2) complete new company data (you did a quickAdd)
+  sc.newjob[0] = {}; 
+  sc.newjob[1] = {name:"", lot:"", floorplan:""};
  
   //If the user is an Admin, we will add an input field to select which company the new job belongs to
   //otherwise
@@ -416,13 +420,24 @@ angular.module('anguApp')
       { 
         sc.companyNames = response;
         //Add an option to add a new company on the fly here
-        sc.companyNames[sc.companyNames.length] = {_id: "Add new", name:"Add new"};
+        //sc.companyNames[sc.companyNames.length] = {_id: "Add new", name:"Add new"};
         console.log(sc.companyNames);
       },
       function(response) { sc.message = "Error loading Companies: " + response.status + " " + response.statusText; sc.companiesLoaded = -1; });
   }
 
-  sc.SubmitNewJob = function() { alert("lol"); };
+  sc.SubmitNewJob = function() {
+    //If we selected an existing company, we want to share that ID with the newjob object
+    if(sc.newjob[0].company)
+      sc.newjob[1].company = sc.newjob[0].company;
+    console.log("Submitting job data: ", sc.newjob[1]);
+    apexFactory.GetJobs().Save(sc.newjob, 
+      function(response){
+        alert("Successfully submit new job, yay");},
+      function(response){
+        alert("Error loading Companies: " + response.status + " " + response.statusText);
+    });
+  };
 }])
 
 .controller('HeaderControl', ['$scope', '$localStorage', '$state', '$rootScope', 'ngDialog', 'AuthFactory', function ($scope, $localStorage, $state, $rootScope, ngDialog, AuthFactory) {

@@ -396,7 +396,9 @@ angular.module('anguApp')
   //Not everything has to be defined here :0
   sc.newjob = [{}];
 
-  //Two options here: 1) an ID number because you selected an existing company. 2) complete new company data (you did a quickAdd)
+  //newjob[0] is for company info. Two options here: 
+  //  1) an ID number because you selected an existing company. newjob[0].company = mongo ID
+  //  2) complete new company data (you did a quickAdd as an admin) newjob[0] = {name:"united", address:"myhouse"} etc.
   sc.newjob[0] = {}; 
   sc.newjob[1] = {name:"", lot:"", floorplan:""};
  
@@ -405,7 +407,7 @@ angular.module('anguApp')
   sc.isAdmin = AuthFactory.IsAdmin();
   if(!sc.isAdmin)
   {
-    sc.newjob.company = AuthFactory.GetCompany();
+    sc.newjob[0].company = AuthFactory.GetCompany();
   }
   else
   {

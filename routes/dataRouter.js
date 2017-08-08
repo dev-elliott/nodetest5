@@ -250,7 +250,7 @@ dataRouter.route('/test')
 			else 
 			{
 				Users.findById(req.params.id)
-				.populate('companyId')
+				.populate('company')
 				.exec(function (err, user) 
 				{
 					if(user) 

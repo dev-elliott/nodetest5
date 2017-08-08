@@ -102,7 +102,7 @@
 		{
 			return next();
 		}
-		if(req.params.companyId == req.decoded.companyId)
+		if(req.params.companyId == req.decoded.company)
 		{
 			return next();
 		}

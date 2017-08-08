@@ -98,14 +98,17 @@
 	};
 
 	exports.verifyCompanyOrAdmin = function(req, res, next){
-		if(!req.decoded.admin || req.params.companyId != req.decoded.companyId)
+		if(req.decoded.admin)
 		{
-			var err = new Error("You are not an authorized employee or admin");
-			err.status = 403;
-			return next(err);
-		}
-		else
 			return next();
+		}
+		if(req.params.companyId == req.decoded.companyId)
+		{
+			return next();
+		}
+		var err = new Error("You are not an authorized employee or admin");
+		err.status = 403;
+		return next(err);
 	};
 
 	exports.confirmEmployee = function(req, res, next)

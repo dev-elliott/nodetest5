@@ -7,7 +7,7 @@
   //
   //  Todo:
   //	-Populating when getting all companies, what data do we want to pull from DB?
-  //	-
+  //	-When notifying admin of an edit, include which company it was, and what they changed.
   //
 //└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 var express 		= require('express');
@@ -43,7 +43,7 @@ companyRouter.use(bodyParser.json());
 	.get(function(req, res, next) {
 		Companies.find(req.query)
 			.populate('employees')
-			.populate('jobs', '_id') //i also want to send the status, whats the right syntax??
+			.populate('jobs', '_id') //i also want to send the job-status, whats the right syntax??
 			.exec(function (err, companies) {
 				if(err) { return next(new Error("ERROR IN FIND - DATA GET/CONPANIES: ")); }
 				res.json(companies);// res.json also sends response code # and headers :O
@@ -60,7 +60,7 @@ companyRouter.use(bodyParser.json());
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.post(function(req, res, next) {
 		//Check for non-existant JSON body data before trying to validate/create it
-		if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO CREATE THE JOB WITH"));
+		if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO CREATE THE COMPANY WITH"));
 
 		Companies.create(req.body, function(err, company) {
 			if(err) { console.log("ERROR IN CREATE - POST DATA/COMPANIES: ",  err); return next(err); }
@@ -82,7 +82,7 @@ companyRouter.use(bodyParser.json());
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.all(Utility.verifyOrdinaryUser, function(req, res, next) {
 		if(!(req.method == "GET" || req.method == "PUT" || req.method == "DELETE"))
-			return next(new Error("HTTP method " + req.method + " is not supported on /jobs" + req.url));
+			return next(new Error("HTTP method " + req.method + " is not supported on companies/id" + req.url));
 		next();
 	})
 	//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -128,7 +128,7 @@ companyRouter.use(bodyParser.json());
 		}
 	})
 	//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
-	//	.put() update specific existing company by ID# -- add job or employee to their respective array
+	//	.put() update specific existing company by ID# -- add company or employee to their respective array
 	//	-Restrictions: Available only to admin or employee
 	//  -Request company companyId via url params and JSON format in body for company properties to update
 	// 	-Response confirming the company was successfully updated
@@ -142,10 +142,9 @@ companyRouter.use(bodyParser.json());
 		if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO UPDATE THE COMPANY WITH"));
 
 		Companies.findByIdAndUpdate(req.params.companyId, { $set: req.body } , { new: true }, function(err,company) {
-			if(err) { console.log("ERROR IN FIND&UPDATE - PUT/JOBID: ",  err); return next(err); }
-			if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO UPDATE THE JOB WITH"));
-			if(!req.decoded.admin) Utility.notifyAdmin("A company has been updated.");
-			//console.log("Updated company # " + company._id + " with the following data: " + JSON.stringify(req.body));
+			if(err) { console.log("ERROR IN FIND&UPDATE - PUT/COMPANYID: ",  err); return next(err); }
+			if(!req.decoded.admin) Utility.notifyAdmin(company.name + " has updated their company data"); //If a user has edited this data, notify admin 
+			console.log("Updated company # " + company._id + " with the following data: " + JSON.stringify(req.body));
 			res.json({result:"Success"});
 		});
 		
@@ -159,8 +158,8 @@ companyRouter.use(bodyParser.json());
 	// 	---Incorrect/invalid/non-existant ID#
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.delete(Utility.verifyAdmin, function(req, res, next) {
-		Jobs.remove({"_id" : req.params.companyId}, function(err, resp){
-			if(err) { console.log("ERROR IN REMOVE - DELETE/JOBID: ",  err); return next(err); }
+		Companies.remove({"_id" : req.params.companyId}, function(err, resp){
+			if(err) { console.log("ERROR IN REMOVE - DELETE/COMPANYID: ",  err); return next(err); }
 			//console.log("Deleted company with id#: " + req.params.companyId);
 			//I imagine at some point we'll want to render a full on specific "deletion success" page
 			res.json({result:"Success"});

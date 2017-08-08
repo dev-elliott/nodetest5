@@ -33,6 +33,7 @@
   var url           = config.mongoUrl;
   var app           = express();
 
+  //The code for HTTPS has been removed: in production nginx handles HTTPS so I don't need to configure it within node.
   //Secure traffic only
   // app.all('*', function(req, res, next) {
   //   if(req.secure) { return next(); }
@@ -82,7 +83,6 @@
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ ROUTING                                                                                           ╣
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
-  //app.use('/', routes);
   app.use('/auth',      authRouter);
   app.use('/users',     userRouter);
   app.use('/companies', companyRouter);

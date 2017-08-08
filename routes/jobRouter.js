@@ -55,7 +55,18 @@ jobRouter.use(bodyParser.json());
 		}
 		else
 		{
-			//Not admin, return jobs for your company only
+			//Not admin, return jobs for your company only. 
+			//First make sure the user has been assigned a company though!
+			//Also......since we query this...we have to return an array!
+			if(!req.decoded.company)
+			{
+				console.log("we detected a brand new uninitiated user");
+				var data = [{}];
+				data[0] = {result:"Failed", message:"User not yet linked to company. Contact admin."};
+				data[1] = {test:"fillerDataHere"};
+				res.json(data); 
+				return;
+			}
 			var companyId = mongoose.Types.ObjectId(req.decoded.company.toString());
 			Jobs.find({company: companyId})
 				.populate('company')

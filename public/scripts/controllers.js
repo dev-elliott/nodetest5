@@ -37,7 +37,11 @@ angular.module('anguApp')
 }])
 
 .controller('CompanyControl', ["$scope", "$stateParams", "apexFactory", "AuthFactory", "ngDialog", function(sc, $stateParams, apexFactory, AuthFactory, ngDialog) {
+  //
+  // ================ INITIAL SETUP =============================================================
+  //
   console.log("companycontrol loaded ok thanks");
+  sc.companies = [{}];
   sc.isAdmin = AuthFactory.IsAdmin();
   if(!sc.isAdmin)
   {
@@ -66,24 +70,65 @@ angular.module('anguApp')
     function(response) { sc.companies = response; sc.companiesLoaded = 1;},
     function(response) { sc.message = "Error loading Companies: " + response.status + " " + response.statusText; sc.companiesLoaded = -1; });
 
-  sc.companyData = {};
+  //
+  // ================ CREATE NEW, EDIT, DELETE =============================================================
+  //
+  sc.companyData = {}; //This is from user input for a new company
   sc.createNewCompany = function()
   {
-    alert("Click");
     ngDialog.open({ template: 'views/newcompany.html', scope: sc, className: 'ngdialog-theme-default'}); 
   };
   sc.saveNewCompany = function()
   {
-    alert("saving that shit");
     apexFactory.GetCompanies().save(sc.companyData, function(response)
     {
       alert("save success,  id (response): " + response);
       console.log("save success,  id (response): " + response);
+      //We successfully added the company to the database, let's reflect that clientside (add it to table)
+      sc.companies.push(sc.companyData); 
+      sc.companyData = {};
+      ngDialog.close();
     },
     function(response)
     {
       console.log("Failed response saving new company: ", response);
+      alert("An error occured and your new company wasn't saved");
     });
+  };
+
+
+  sc.UpdateCompany = function(data, _id)
+  {
+    apexFactory.GetCompanies().Update({_id:_id}, data);
+  };
+
+
+  sc.companyToDelete = null; //Reference (id) to the company we clicked delete button for
+  sc.PromptDelete = function(_id)
+  {
+    sc.companyToDelete = _id;
+    ngDialog.open({ template: 'views/confirmDeleteCompany.html', scope: sc, className: 'ngdialog-theme-default'}); 
+  };
+  sc.DeleteCompany = function()
+  {
+    if(sc.companyToDelete != null) //Just make sure we got an id before proceeding
+    {
+      apexFactory.GetCompanies().delete({_id:sc.companyToDelete}, function(response) 
+        { 
+          //We removed a company with _id from the database successfully.
+          //Now to remove that row from the table...match it based on _id I guess
+          var count = 0;
+          for(var i = 0; i < sc.companies.length; i++)
+            if(sc.companies[i]._id == sc.companyToDelete)
+            {
+              sc.companies.splice(i, 1); //Surgically remove this single element
+              sc.companyToDelete = null;
+              ngDialog.close();
+              return;
+            }
+        },
+      function(response) { console.log("Failed to delete company: ", response); alert("An error occured and the company wasn't deleted"); });
+    }
   };
 }])
 
@@ -186,8 +231,31 @@ angular.module('anguApp')
   sc.message = "Loading...";
 
   sc.jobs = apexFactory.GetJobs().query(
-     function(response) { sc.jobs = response; sc.jobsLoaded = 1;},
-     function(response) { sc.message = "Error loading Jobs: " + response.status + " " + response.statusText; sc.jobsLoaded = -1});
+     function(response) 
+     { 
+      //Okay, so we made a successful call to the database...however there are some different results we need to account for!
+      
+      //If there are no jobs to load, you'll just get a blank array.
+      if(response.length == 0)
+      {
+        sc.message = "There are no jobs to display at this time."
+        sc.jobsLoaded = -1;
+        return;
+      }
+      //If the user is not yet linked to their company...
+      if(response[0].result == "Failed")
+      {
+        sc.message = response[0].message;
+        sc.jobsLoaded = -1;
+        return;
+      }
+      //Otherwise, jobs successfully loaded, we good:
+      sc.jobs = response;
+      sc.jobsLoaded = 1;
+      return;
+
+    },
+     function(response) { sc.message = "Error loading Jobs: " + response.result + " " + response.statusText; sc.jobsLoaded = -1});
   
   
   sc.LoadJob = function()
@@ -197,14 +265,9 @@ angular.module('anguApp')
         function(response) { },
         function(response) { });
   }
-  sc.SaveJob = function(data, _id)
+  sc.UpdateJob = function(data, _id)
   {
-    //MYSTERY........
-    //This updates our client side data...
-    //Even though I'm not updating it in callback ???
-    //Refer to User edit
     apexFactory.GetJobs().Update({_id:_id}, data);
-
   };
   sc.DeleteJob = function(_id)
   {
@@ -582,7 +645,7 @@ angular.module('anguApp')
   function init_map() {
 
     console.log('Creating Google Map.');
-    var location = new google.maps.LatLng(47.900268, -122.296205); // Pac West latitude/longitude.
+    var location = new google.maps.LatLng(48, 12); // Pac West latitude/longitude.
 
     var mapoptions = {
       center: location,

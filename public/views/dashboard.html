@@ -74,7 +74,7 @@
               <md-tooltip md-direction="bottom">Go to User</md-tooltip></span></td>
             <td style="white-space: nowrap">
             <!-- form -->
-              <form editable-form name="rowform" onaftersave="SaveJob($data, job._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == job">
+              <form editable-form name="rowform" onaftersave="UpdateJob($data, job._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == job">
                 <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-success">
                   <md-tooltip md-direction="right">Save changes</md-tooltip>
                   <span class="glyphicon glyphicon-floppy-save"</span>
@@ -186,21 +186,26 @@
             <th>EMPLOYEES</th>
             <th>ACTIONS
               <span class="pull-right glyphicon glyphicon-plus-sign" ng-click='createNewCompany()' ng-if='isAdmin'>
-              <md-tooltip md-direction="top">Add new job</md-tooltip>
+              <md-tooltip md-direction="top">Add new company</md-tooltip>
               </span>
             </th>
           </tr>
           <tr class="fluid-container" ng-repeat="company in companies">
-            <td><span>{{ company.name || 'empty' }}</span></td>
-            <td><span>{{ company.address1 || 'empty' }}<span ng-if"company.address2"><br>{{company.address2}}</span></span></td>
-            <td><span>{{ company.city || 'empty' }}</span></td>
-            <td><span>{{ company.state || 'empty' }}</span></td>
-            <td><span>{{ company.zip || 'empty' }}</span></td>
+            <td><span editable-text="company.name" e-name="name" e-form="rowform" e-required>{{ company.name || 'empty' }}</span></td>
+            
+            <td>
+              <span editable-text="company.address1" e-name="address1" e-form="rowform" e-required>{{ company.address1 || 'empty' }}</span></br>
+              <span editable-text="company.address2" e-name="address2" e-form="rowform" e-required e-placeholder="Address line 2">{{company.address2}}</span>
+            </td>
+            
+            <td><span editable-text="company.city" e-name="city" e-form="rowform" e-required>{{ company.city || 'empty' }}</span></td>
+            <td><span editable-text="company.state" e-name="state" e-form="rowform" e-required>{{ company.state || 'empty' }}</span></td>
+            <td><span editable-text="company.zip" e-name="zip" e-form="rowform" e-required>{{ company.zip || 'empty' }}</span></td>
             <td>{{company.jobs.length || '0'}} ({{GetOpenJobsCount(company)}})</td>
             <td>*TODO*</td>
             <td style="white-space: nowrap">
             <!-- form -->
-              <form editable-form name="rowform" onaftersave="SaveUser($data, user._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+              <form editable-form name="rowform" onaftersave="UpdateCompany($data, company._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == company">
                 <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-success">
                   <md-tooltip md-direction="right">Save changes</md-tooltip>
                   <span class="glyphicon glyphicon-floppy-save"</span>
@@ -211,8 +216,6 @@
                 </button>
             </form>
             <!-- form -->
-              <form editable-form name="rowform" onaftersave="SaveCompany($data, company._id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == company">
-            </form>
             <div class="buttons" ng-show="!rowform.$visible">
                 <button class="btn btn-primary" ng-click="rowform.$show()">
                   <md-tooltip md-direction="right">Quick edit</md-tooltip>
@@ -222,7 +225,7 @@
                   <md-tooltip md-direction="right">Full details</md-tooltip>
                   <span ui-sref="app.detail({_id: company._id})" class="glyphicon glyphicon-zoom-in"</span>
                 </button>
-                <button class="btn btn-danger" ng-click="DeleteCompany(company._id)">
+                <button class="btn btn-danger" ng-click="PromptDelete(company._id)">
                   <md-tooltip md-direction="right">Delete</md-tooltip>
                   <span class="glyphicon glyphicon-trash"</span>
                 </button>

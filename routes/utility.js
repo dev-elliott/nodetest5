@@ -33,7 +33,8 @@
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
 	exports.getToken = function(user){
 		//ExpiresIn = amount of seconds
-		return jwt.sign(user, config.secretKey, {expiresIn: 36000});
+		//return jwt.sign(user, config.secretKey, {expiresIn: 36000});
+		return jwt.sign(user, config.secretKey, {expiresIn: 15});
 	};
 
 	exports.verifyOrdinaryUser = function(req, res, next){

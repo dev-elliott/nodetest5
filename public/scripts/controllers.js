@@ -442,7 +442,7 @@ angular.module('anguApp')
   };
 }])
 
-.controller('HeaderControl', ['$scope', '$localStorage', '$state', '$rootScope', 'ngDialog', 'AuthFactory', function ($scope, $localStorage, $state, $rootScope, ngDialog, AuthFactory) {
+.controller('HeaderControl', ['$scope', '$localStorage', '$state', '$rootScope', 'ngDialog', 'AuthFactory', '$window', function ($scope, $localStorage, $state, $rootScope, ngDialog, AuthFactory, $window) {
   //there is some code duplication between HeaderControl and LoginControl, and I think that's okay.
   //Essentially you can log in/out from two seperate locations; and we want to make sure they both work
   //and affect each other when used. Logging in from one location needs to let the other lcoation know
@@ -483,6 +483,7 @@ angular.module('anguApp')
       AuthFactory.Logout();
       $scope.user.loggedIn = false;
       $scope.user.username = '';
+      $window.location.href = '/#';
   };
 
   $scope.StateIs = function(currentState) { return $state.is(currentState); };
@@ -508,6 +509,7 @@ angular.module('anguApp')
     //Our token has expired, we can no longer access the server (where auth is required)
     //So lets see if we either have userinfo saved in local storage and re-login
     //or if not, just log out
+    alert("we got a broadcast saying your token is expired...relogin");
     console.log("We caught broadcast 'token:Expired' in headerControl!, groovy");
   });
 }])

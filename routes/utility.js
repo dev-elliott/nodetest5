@@ -33,8 +33,8 @@
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
 	exports.getToken = function(user){
 		//ExpiresIn = amount of seconds
-		//return jwt.sign(user, config.secretKey, {expiresIn: 36000});
-		return jwt.sign(user, config.secretKey, {expiresIn: 15});
+		return jwt.sign(user, config.secretKey, {expiresIn: 36000});
+		//return jwt.sign(user, config.secretKey, {expiresIn: 15});
 	};
 
 	exports.verifyOrdinaryUser = function(req, res, next){
@@ -121,31 +121,35 @@
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ NOTIFICATIONS																					//╣ 
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
-	exports.notifyAdminNEW = function(type, obj1, obj2)
+	exports.notifyAdmin = function(type, obj1, obj2)
 	{
 		console.log("Going to notify admin .......");
-		Users.findOne({admin:true})
-		.exec(function (err, admin) {
-
-			if(err) { return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
-			if(admin)
+		Users.findOne({}).exec(function (err, admin) {
+			//console.log("we found the folowing admin count", admin.count);
+			console.log("we found the folowing admin data", admin);
+			if(admin == null)
 			{
-				var bdy = generateNotificationHTML(type, obj1, obj2);
-				//console.log("Here is the body of our notify: ", bdy);
-				admin.notifications.push({body: bdy});
-				admin.save(function(err, admin){
-					if(err) { return next(err); }
-					//else
-					//	console.log("Successfully notified admin for a total of: " + admin.notifications.length);
-				});
+				console.log("ADMIN IS FUUFUUF NULL..BYE");
+				return;
 			}
+			if(err) { console.log("Had an error finding admin"); return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
+
+			var bdy = generateNotificationHTML(type, obj1, obj2);
+			//console.log("Here is the body of our notify: ", bdy);
+			admin.notifications.push({body: bdy});
+			admin.save(function(err, admin){
+				if(err) { console.log("Had an error saving to admin"); return next(err); }
+				else
+					console.log("Successfully notified admin" + admin.username + "for a total of: " + admin.notifications.length);
+			});
+		
 		});
 	};
 
-	exports.notifyAdmin = function(message)
+	exports.notifyAdminMessage = function(message)
 	{
-		//console.log("Going to notify admin that " + message);
-		Users.findOne({admin:true})
+		console.log("Going to notify admin that " + message);
+		Users.findOne({"admin":true})
 		.exec(function (err, admin) {
 
 			if(err) { return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
@@ -181,11 +185,12 @@
 
 	function generateNotificationHTML(type, obj1, obj2)
 	{
+		console.log("Generating a notification of type " + type);
 		var link1;
 		var link2;
 
-		if(obj1) link1 = config.baseURL + "#/detail/" + obj1.id;
-		if(obj2) link2 = config.baseURL + "#/detail/" + obj2.id;
+		if(obj1) link1 = config.baseURL + "#!/detail/" + obj1.id;
+		if(obj2) link2 = config.baseURL + "#!/detail/" + obj2.id;
 
 
 		switch(type)

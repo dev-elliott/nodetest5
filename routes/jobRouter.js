@@ -51,6 +51,7 @@ jobRouter.use(bodyParser.json());
 				.exec(function (err, jobs) {
 					if(err) { return next(new Error("ERROR IN FIND - GET/JOBS: ")); }
 					res.json(jobs);
+					return;
 			});
 		}
 		else
@@ -73,8 +74,15 @@ jobRouter.use(bodyParser.json());
 				.populate('submitBy')
 				.exec(function (err, jobs) {
 					if(err) { return next(new Error("ERROR IN FIND - GET/JOBS: ")); }
-					if(!jobs || jobs.length < 1) res.json({result:"Success", count:0});
+					if(!jobs || jobs.length < 1) 
+					{
+						var data = [{}];
+						data[0] = {result:"Success", count:0};
+						res.json(data);
+						return;
+					}
 					res.json(jobs);
+					return;
 			});
 		}
 	})
@@ -148,10 +156,24 @@ jobRouter.use(bodyParser.json());
 			job.submitBy = userId;
 			job.company = companyId;
 
+			//load up company data so when we pass it to the notifications, it can spit out company.name
+			//job.populate("company");
+			//Doesn't work. Lame. Now I have to query....
+
+			//This is garbage. I don't know how else to get this data and send it to notification generation though. 
+			var companyObject;
+			Companies.findById(companyId).exec(function(err, com){
+				companyObject = com;
+			});
+
+
 			job.save(function(err, job) {
 				if(err) { console.log("ERROR IN CREATE - POST/JOBS: ",  err); return next(err); }
-				//res.writeHead(200, { 'Content-Type': 'text/plain' });
-				Utility.notifyAdmin("A new job has been posted!");
+
+				//notifyAdmin( type = Job-New , obj1 = company , obj2 = job)
+				console.log("Calling notifyadmnin");
+				Utility.notifyAdminMessage("a jobby has been madey");
+				Utility.notifyAdmin("Job-New", companyObject, job);
 				res.json({result:job._id});
 			});
 		}

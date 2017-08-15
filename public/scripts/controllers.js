@@ -236,7 +236,7 @@ angular.module('anguApp')
       //Okay, so we made a successful call to the database...however there are some different results we need to account for!
       
       //If there are no jobs to load, you'll just get a blank array.
-      if(response.length == 0)
+      if(response.length == 0 || response[0].count == 0)
       {
         sc.message = "There are no jobs to display at this time."
         sc.jobsLoaded = -1;
@@ -509,8 +509,10 @@ angular.module('anguApp')
     //Our token has expired, we can no longer access the server (where auth is required)
     //So lets see if we either have userinfo saved in local storage and re-login
     //or if not, just log out
-    alert("we got a broadcast saying your token is expired...relogin");
-    console.log("We caught broadcast 'token:Expired' in headerControl!, groovy");
+    //For now, we are just going to log you out, sorry.
+    alert("Your login has expired; please relog to proceed.");
+    console.log("We caught broadcast 'token:Expired' in headerControl!, groovy. You will now be logged out!");
+    $scope.LogOut();
   });
 }])
 

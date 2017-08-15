@@ -56,6 +56,7 @@ angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource",
     });
 
     $urlRouterProvider.otherwise('/');
+    //We want to intercept a server response saying our jwt credentials have expired and have the user relogin.
     $httpProvider.interceptors.push(['$q', '$location', '$localStorage', '$rootScope', function($q, $location, $localStorage, $rootScope) {
       var count = 0;
       return {
@@ -66,7 +67,6 @@ angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource",
           'responseError': function(response) {
             console.log("intercepting a respnose..", response);
               if(response.data.message == ("tokenexpired")) {
-                  alert("we intercepted a token expired emssage");
                   $rootScope.$broadcast('token:Expired'); 
                   count++;
                   console.log("We have caught it this many times...", count);

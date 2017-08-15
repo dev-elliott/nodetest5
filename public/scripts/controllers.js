@@ -396,7 +396,9 @@ angular.module('anguApp')
   //Not everything has to be defined here :0
   sc.newjob = [{}];
 
-  //Two options here: 1) an ID number because you selected an existing company. 2) complete new company data (you did a quickAdd)
+  //newjob[0] is for company info. Two options here: 
+  //  1) an ID number because you selected an existing company. newjob[0].company = mongo ID
+  //  2) complete new company data (you did a quickAdd as an admin) newjob[0] = {name:"united", address:"myhouse"} etc.
   sc.newjob[0] = {}; 
   sc.newjob[1] = {name:"", lot:"", floorplan:""};
  
@@ -405,7 +407,7 @@ angular.module('anguApp')
   sc.isAdmin = AuthFactory.IsAdmin();
   if(!sc.isAdmin)
   {
-    sc.newjob.company = AuthFactory.GetCompany();
+    sc.newjob[0].company = AuthFactory.GetCompany();
   }
   else
   {
@@ -440,7 +442,7 @@ angular.module('anguApp')
   };
 }])
 
-.controller('HeaderControl', ['$scope', '$localStorage', '$state', '$rootScope', 'ngDialog', 'AuthFactory', function ($scope, $localStorage, $state, $rootScope, ngDialog, AuthFactory) {
+.controller('HeaderControl', ['$scope', '$localStorage', '$state', '$rootScope', 'ngDialog', 'AuthFactory', '$window', function ($scope, $localStorage, $state, $rootScope, ngDialog, AuthFactory, $window) {
   //there is some code duplication between HeaderControl and LoginControl, and I think that's okay.
   //Essentially you can log in/out from two seperate locations; and we want to make sure they both work
   //and affect each other when used. Logging in from one location needs to let the other lcoation know
@@ -481,6 +483,7 @@ angular.module('anguApp')
       AuthFactory.Logout();
       $scope.user.loggedIn = false;
       $scope.user.username = '';
+      $window.location.href = '/#';
   };
 
   $scope.StateIs = function(currentState) { return $state.is(currentState); };
@@ -506,6 +509,7 @@ angular.module('anguApp')
     //Our token has expired, we can no longer access the server (where auth is required)
     //So lets see if we either have userinfo saved in local storage and re-login
     //or if not, just log out
+    alert("we got a broadcast saying your token is expired...relogin");
     console.log("We caught broadcast 'token:Expired' in headerControl!, groovy");
   });
 }])

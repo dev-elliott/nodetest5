@@ -90,10 +90,6 @@ jobRouter.use(bodyParser.json());
 	.post(function(req, res, next) {
 		console.log("so ur tryna submit a new job...data below");
 		console.log(req.body);
-		console.log("req.body 0 then 1 ..............");
-
-		console.log(req.body[0]);
-		console.log(req.body[1]);
 
 		//Manually submitting a new job as an Admin:
 
@@ -146,11 +142,11 @@ jobRouter.use(bodyParser.json());
 			//Check for non-existant JSON body data before trying to validate/create it
 			if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO CREATE THE JOB WITH"));
 
-			var job = Jobs(req.body);
+			var job = Jobs(req.body[1]);
 			var userId = mongoose.Types.ObjectId(req.decoded._id.toString());
-			var companyId = mongoose.Types.ObjectId(req.decoded.companyId.toString());
+			var companyId = mongoose.Types.ObjectId(req.decoded.company.toString());
 			job.submitBy = userId;
-			job.companyId = companyId;
+			job.company = companyId;
 
 			job.save(function(err, job) {
 				if(err) { console.log("ERROR IN CREATE - POST/JOBS: ",  err); return next(err); }
@@ -208,7 +204,7 @@ jobRouter.use(bodyParser.json());
 					//Is this the only error that findById will throw? Not finding the entry??
 					return next(new Error("No job in database with ID# " + req.params.jobId));
 				}
-				if(req.decoded.companyId == job.company || req.decoded.admin)
+				if(req.decoded.company == job.company || req.decoded.admin)
 					res.json(job);
 				else return next(new Error("You are not authorized to view this job"));
 		});
@@ -233,7 +229,7 @@ jobRouter.use(bodyParser.json());
 		.exec(function(err,job) {
 			if(err) { console.log("ERROR IN FIND&UPDATE - PUT/JOBID: ",  err); return next(err); }
 			if(!req.body) return next(new Error("NO JSON BODY PROVIDED TO UPDATE THE JOB WITH"));
-			if(req.decoded.companyId == job.company || req.decoded.admin)
+			if(req.decoded.company == job.company || req.decoded.admin)
 			{
 				//console.log("Updated job # " + job._id + " with the following data: " + JSON.stringify(req.body));
 				//If the update is done by a non-admin, notify the admin of the changes.
@@ -298,7 +294,7 @@ jobRouter.use(bodyParser.json());
 			.populate("comments.author")
 			.exec(function(err, job){
 				if(err || !job) { console.log("ERROR IN FINDING - GET/JOBID/COMMENTS: ",  err); return next(err); }
-				if(req.decoded.companyId == job.company || req.decoded.admin)
+				if(req.decoded.company == job.company || req.decoded.admin)
 				{
 					if(job.comments.length <= 0) { return next(new Error("There are no comments in this job")); }
 					res.json(job.comments);
@@ -404,7 +400,7 @@ jobRouter.use(bodyParser.json());
 				}
 				else
 				{
-					if(req.decoded.companyId == job.company || req.decoded.admin)
+					if(req.decoded.company == job.company || req.decoded.admin)
 					{
 						var comment = job.comments.id(req.params.commentId);
 						if(!comment) return next(new Error(

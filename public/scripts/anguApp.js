@@ -17,7 +17,7 @@
 console.log("anguApp.js loaded ok thanks");
 angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource", 'ngDialog', 'ngAnimate', 'ngSanitize'])
   .run(function(editableOptions) { editableOptions.theme = 'bs3'; } )
-  .config(function($stateProvider, $urlRouterProvider) {
+  .config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     $stateProvider
 
     .state('app', {
@@ -56,5 +56,24 @@ angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource",
     });
 
     $urlRouterProvider.otherwise('/');
-  })
+    $httpProvider.interceptors.push(['$q', '$location', '$localStorage', '$rootScope', function($q, $location, $localStorage, $rootScope) {
+      var count = 0;
+      return {
+          'request': function (config) {
+              //alert("We are intercepting a request cool");
+              return config;
+          },
+          'responseError': function(response) {
+            console.log("intercepting a respnose..", response);
+              if(response.data.message == ("tokenexpired")) {
+                  alert("we intercepted a token expired emssage");
+                  $rootScope.$broadcast('token:Expired'); 
+                  count++;
+                  console.log("We have caught it this many times...", count);
+              }
+              return $q.reject(response);
+          }
+      };
+   }]);
+})
 ;

@@ -93,7 +93,7 @@
                   <md-tooltip md-direction="right">Full details</md-tooltip>
                   <span ui-sref="app.detail({_id: job._id})" class="glyphicon glyphicon-zoom-in"</span>
                 </button>
-                <button class="btn btn-danger" ng-click="DeleteJob(job._id)">
+                <button class="btn btn-danger" ng-click="PromptDeleteJob(job._id)">
                   <md-tooltip md-direction="right">Delete</md-tooltip>
                   <span class="glyphicon glyphicon-trash"</span>
                 </button>
@@ -225,7 +225,7 @@
                   <md-tooltip md-direction="right">Full details</md-tooltip>
                   <span ui-sref="app.detail({_id: company._id})" class="glyphicon glyphicon-zoom-in"</span>
                 </button>
-                <button class="btn btn-danger" ng-click="PromptDelete(company._id)">
+                <button class="btn btn-danger" ng-click="PromptDeleteCompany(company._id)">
                   <md-tooltip md-direction="right">Delete</md-tooltip>
                   <span class="glyphicon glyphicon-trash"</span>
                 </button>

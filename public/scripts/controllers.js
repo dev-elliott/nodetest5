@@ -104,7 +104,7 @@ angular.module('anguApp')
 
 
   sc.companyToDelete = null; //Reference (id) to the company we clicked delete button for
-  sc.PromptDelete = function(_id)
+  sc.PromptDeleteCompany = function(_id)
   {
     sc.companyToDelete = _id;
     ngDialog.open({ template: 'views/confirmDeleteCompany.html', scope: sc, className: 'ngdialog-theme-default'}); 
@@ -222,13 +222,14 @@ angular.module('anguApp')
   };
 }])
 
-.controller('JobControl', ["$scope", "$stateParams", "apexFactory", function(sc, $stateParams, apexFactory) {
+.controller('JobControl', ["$scope", "$stateParams", "apexFactory", "ngDialog", function(sc, $stateParams, apexFactory, ngDialog) {
   console.log("jobControl loaded ok thanks");
   sc.jobs = {};
   //Error handling
   //0=Loading, 1=Success, -1=Failed
   sc.jobsLoaded = 0;
   sc.message = "Loading...";
+  sc.jobToDelete = null;
 
   sc.jobs = apexFactory.GetJobs().query(
      function(response) 
@@ -269,10 +270,31 @@ angular.module('anguApp')
   {
     apexFactory.GetJobs().Update({_id:_id}, data);
   };
-  sc.DeleteJob = function(_id)
+  sc.PromptDeleteJob = function(_id)
   {
-    console.log("Going to delete job with ID# ", _id);
-
+    sc.jobToDelete = _id;
+    ngDialog.open({ template: 'views/confirmDeleteJob.html', scope: sc, className: 'ngdialog-theme-default'}); 
+  };
+  sc.DeleteJob = function()
+  {
+    if(sc.jobToDelete != null) //Just make sure we got an id before proceeding
+    {
+      apexFactory.GetJobs().delete({_id:sc.jobToDelete}, function(response) 
+        { 
+          //We removed a company with _id from the database successfully.
+          //Now to remove that row from the table...match it based on _id I guess
+          var count = 0;
+          for(var i = 0; i < sc.jobs.length; i++)
+            if(sc.jobs[i]._id == sc.jobToDelete)
+            {
+              sc.jobs.splice(i, 1); //Surgically remove this single element
+              sc.jobToDelete = null;
+              ngDialog.close();
+              return;
+            }
+        },
+      function(response) { console.log("Failed to delete company: ", response); alert("An error occured and the company wasn't deleted"); });
+    }
   };
 
 

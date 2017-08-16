@@ -123,19 +123,10 @@
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
 	exports.notifyAdmin = function(type, obj1, obj2)
 	{
-		console.log("Going to notify admin .......");
-		Users.findOne({}).exec(function (err, admin) {
-			//console.log("we found the folowing admin count", admin.count);
-			console.log("we found the folowing admin data", admin);
-			if(admin == null)
-			{
-				console.log("ADMIN IS FUUFUUF NULL..BYE");
-				return;
-			}
-			if(err) { console.log("Had an error finding admin"); return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
+		Users.findOne({"admin":true}).exec(function (err, admin) {
+			if(err || !admin) {return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
 
 			var bdy = generateNotificationHTML(type, obj1, obj2);
-			//console.log("Here is the body of our notify: ", bdy);
 			admin.notifications.push({body: bdy});
 			admin.save(function(err, admin){
 				if(err) { console.log("Had an error saving to admin"); return next(err); }
@@ -148,7 +139,6 @@
 
 	exports.notifyAdminMessage = function(message)
 	{
-		console.log("Going to notify admin that " + message);
 		Users.findOne({"admin":true})
 		.exec(function (err, admin) {
 

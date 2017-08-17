@@ -61,7 +61,7 @@ jobRouter.use(bodyParser.json());
 			//Also......since we query this...we have to return an array!
 			if(!req.decoded.company)
 			{
-				console.log("we detected a brand new uninitiated user");
+				//console.log("we detected a brand new uninitiated user");
 				var data = [{}];
 				data[0] = {result:"Failed", message:"User not yet linked to company. Contact admin."};
 				data[1] = {test:"fillerDataHere"};
@@ -96,8 +96,8 @@ jobRouter.use(bodyParser.json());
 	// 	---No JSON data provided. I throw my own error below, immediately when that's detected.
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.post(function(req, res, next) {
-		console.log("so ur tryna submit a new job...data below");
-		console.log(req.body);
+		// console.log("so ur tryna submit a new job...data below");
+		// console.log(req.body);
 
 		//Manually submitting a new job as an Admin:
 
@@ -113,8 +113,8 @@ jobRouter.use(bodyParser.json());
 			if(req.body[0].company)//Existing company selected
 			{
 				//Make new job with req.body[1]
-				console.log("Trying to save this job:");
-				console.log(job);
+				// console.log("Trying to save this job:");
+				// console.log(job);
 				job.company = req.body[0].company;
 				job.save(function(err){
 					if(err) return(next(err));
@@ -170,9 +170,10 @@ jobRouter.use(bodyParser.json());
 			job.save(function(err, job) {
 				if(err) { console.log("ERROR IN CREATE - POST/JOBS: ",  err); return next(err); }
 
+				// console.log("Calling notifyadmnin");
+				// Utility.notifyAdminMessage("a jobby has been madey");
+				
 				//notifyAdmin( type = Job-New , obj1 = company , obj2 = job)
-				console.log("Calling notifyadmnin");
-				Utility.notifyAdminMessage("a jobby has been madey");
 				Utility.notifyAdmin("Job-New", companyObject, job);
 				res.json({result:job._id});
 			});

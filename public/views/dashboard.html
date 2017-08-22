@@ -41,6 +41,7 @@
 
     <md-tab label="Jobs">
       <div ng-controller="JobControl">
+      <div><p>hello here is sc.deleteReason: {{delData.deleteReason}}</p></div>
       <div ng-if="jobsLoaded == -1"><h3>{{message}}</h3></div>
       <div ng-if="jobsLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
       <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>

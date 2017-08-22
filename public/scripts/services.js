@@ -49,7 +49,7 @@ angular.module('anguApp')
     return $resource(baseURL + "data/details/:_id", null, {'Update':{method:'PUT'}});
   }
 	apexFac.GetJobs = function() {
-		return $resource(baseURL + "jobs/:_id", null, {'Update':{method:'PUT'}, 'Save':{method:'POST'}, 'Delete':{method:'DELETE'}});
+		return $resource(baseURL + "jobs/:_id", null, {'Update':{method:'PUT'}, 'Save':{method:'POST'}, 'Delete':{method:'DELETE'}, 'Request':{method:'POST'}});
   }
 	apexFac.GetCompanies = function()	{
 		return $resource(baseURL + "companies/:_id", null, {'Update':{method:'PUT'}, 'Save':{method:'POST'}, 'Delete':{method:'DELETE'}});

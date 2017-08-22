@@ -292,18 +292,23 @@ angular.module('anguApp')
     };
 }])
 
-.controller('TestControl', ['$scope', '$localStorage', "apexFactory", function(sc, $localStorage, apexFactory){
+.controller('TestControl', ['$scope', '$localStorage', "apexFactory", "ngDialog", function(sc, $localStorage, apexFactory, ngDialog){
   console.log("loaded test controller");
   sc.notes = [];
-   apexFactory.GetTestData().query().$promise.then(
-    function(response) { sc.notes = response; 
-      //console.log(response);
-      //console.log(sc.notes[0].body);
-      //console.log(sc.notes[1].body);
-
-
-    },
+  sc.data={accountNum: '654654'};
+  sc.nig = "cry";
+  apexFactory.GetTestData().query().$promise.then(
+    function(response) { sc.notes = response;   },
     function(response) { alert("Error loading Users: " + response.status + " " + response.statusText); });
+  
+  sc.ShowNgDialog = function () {
+    ngDialog.open({            
+        template: 'views/testDialog.html',
+        scope:sc
+    }); 
+  };
+
+
 }])
 
 .controller('RequestController', ['$scope', 'apexFactory', 'AuthFactory', '$localStorage', function(sc, apexFactory, AuthFactory, $localStorage) {

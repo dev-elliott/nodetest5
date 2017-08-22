@@ -205,7 +205,7 @@ jobRouter.use(bodyParser.json());
 	//	-Method not supported (anything but get/put/delete)
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 	.all(Utility.verifyOrdinaryUser, function(req, res, next) {
-		if(!(req.method == "GET" || req.method == "PUT" || req.method == "DELETE"))
+		if(!(req.method == "GET" || req.method == "PUT" || req.method == "DELETE" || req.method == "POST"))
 			return next(new Error("HTTP method " + req.method + " is not supported on /jobs" + req.url));
 		next();
 	})
@@ -264,7 +264,7 @@ jobRouter.use(bodyParser.json());
 					obj1.name = job.company.name;
 					obj2.id = job._id;
 					obj2.number = job.jobNumber;
-					Utility.notifyAdminNEW("Job-Edit", obj1, obj2);
+					Utility.notifyAdmin("Job-Edit", obj1, obj2);
 				}
 				res.json(job);
 			}
@@ -273,20 +273,79 @@ jobRouter.use(bodyParser.json());
 		});
 	})
 	//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+	//	SPECIAL ROUTE: This post is for an employee to request a job be deleted by the admin.
+	//		We need to post in a reason why, in addition to the url param jobId
+	//	-Restrictions: Available only to verified users
+	//	---Employee will send a request to the admin
+	//  -Request 'jobId' via url params
+	//	-Request 'deleteReason' within body
+	// 	-Response confirming the job was requested to be removed from the database.
+	// 	-Possible failures:
+	// 	---Incorrect/invalid/non-existant ID#
+	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+	.post(Utility.verifyOrdinaryUser, function(req, res, next) {
+		console.log("time to request a delete ding dong");
+		if(req.decoded.admin)
+		{
+			return;
+		}
+		else
+		{
+			console.log("user is requesting a delete, here is bidy");
+			console.log(req.body);
+			//Not an admin, so just send our admin the request to delete
+			// (user, job, why)
+			var user = {id: req.decoded._id, username: req.decoded.username};
+			console.log("here is the user obj", user);
+			
+			Jobs.findById(req.params.jobId, function(err, result)
+			{
+				if(!err)
+				{
+					console.log("we found the job to delete...");
+					Utility.notifyAdminDeleteRequest(user, result, req.body.deleteReason);
+					res.json({result:"Success"});
+				}
+			});
+		}
+	})
+	//┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
 	//	.delete() specific existing job by ID#
 	//	-Restrictions: Available only to admin!
+	//	---Employee will send a request to the admin
 	//  -Request 'jobId' via url params
 	// 	-Response confirming the job was removed from the database.
 	// 	-Possible failures:
 	// 	---Incorrect/invalid/non-existant ID#
 	//└───────────────────────────────────────────────────────────────────────────────────────────────────┘
-	.delete(Utility.verifyAdmin, function(req, res, next) {
-		Jobs.remove({"_id" : req.params.jobId}, function(err, resp){
-			if(err) { console.log("ERROR IN REMOVE - DELETE/JOBID: ",  err); return next(err); }
-			//console.log("Deleted job with id#: " + req.params.jobId);
-			//I imagine at some point we'll want to render a full on specific "deletion success" page
-			res.json({result:"Success"});
-		});
+	.delete(Utility.verifyOrdinaryUser, function(req, res, next) {
+		if(req.decoded.admin)
+		{
+			Jobs.remove({"_id" : req.params.jobId}, function(err, resp){
+				if(err) { console.log("ERROR IN REMOVE - DELETE/JOBID: ",  err); return next(err); }
+				//console.log("Deleted job with id#: " + req.params.jobId);
+				res.json({result:"Success"});
+			});
+		}
+		else
+		{
+			console.log("user is requesting a delete, here isp arams");
+			console.log(req.params);
+			//Not an admin, so just send our admin the request to delete
+			// (user, job, why)
+			var user = {_id: req.decoded._id, username: req.decoded.username};
+			console.log("here is the user obj", user);
+			
+			Jobs.findById(req.params.jobId, function(err, result)
+			{
+				if(!err)
+				{
+					console.log("we found the job to delete...");
+					Utility.notifyAdminDeleteRequest(user, result, req.params.deleteReason);
+					res.json({result:"Success"});
+				}
+			});
+		}
 	});
 
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -352,7 +411,7 @@ jobRouter.use(bodyParser.json());
 			job.save(function(err, job){
 				if(err) { console.log("ERROR IN SAVING - POST/JOBID/COMMENTS: ",  err); return next(err); }
 				//console.log("Added job # %s comments with data %s", job._id, req.body);
-				Utility.notifyAdmin("A new comment has been posted for job id#" + req.params.jobId);
+				Utility.notifyAdminMessage("A new comment has been posted for job id#" + req.params.jobId);
 				//For notifying all the users involved in this job that the admin has posted a new comment
 				//Build an array of userids from:
 				//	-Every comment author id

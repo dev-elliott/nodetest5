@@ -183,40 +183,41 @@ angular.module('anguApp')
   };
 }])
 
-.controller('JobControl', ["$scope", "$stateParams", "apexFactory", "ngDialog", function(sc, $stateParams, apexFactory, ngDialog) {
+.controller('JobControl', ["$scope", "$stateParams", "apexFactory", "ngDialog", "AuthFactory", function(sc, $stateParams, apexFactory, ngDialog, AuthFactory) {
+  sc.isAdmin = AuthFactory.IsAdmin();
+  console.log("r u admin: ", sc.isAdmin);
   sc.jobs = {};
   //Error handling
   //0=Loading, 1=Success, -1=Failed
   sc.jobsLoaded = 0;
   sc.message = "Loading...";
-  sc.jobToDelete = null;
+  sc.jobToDelete = null; //Reference to the job a user wants to delete
+  sc.delData = {deleteReason:''}; //(If employee) reason to send to admin why you want to delete a job
 
-  sc.jobs = apexFactory.GetJobs().query(
-     function(response) 
-     { 
-      //Okay, so we made a successful call to the database...however there are some different results we need to account for!
-      
-      //If there are no jobs to load, you'll just get a blank array.
-      if(response.length == 0 || response[0].count == 0)
-      {
-        sc.message = "There are no jobs to display at this time."
-        sc.jobsLoaded = -1;
-        return;
-      }
-      //If the user is not yet linked to their company...
-      if(response[0].result == "Failed")
-      {
-        sc.message = response[0].message;
-        sc.jobsLoaded = -1;
-        return;
-      }
-      //Otherwise, jobs successfully loaded, we good:
-      sc.jobs = response;
-      sc.jobsLoaded = 1;
+  sc.jobs = apexFactory.GetJobs().query(function(response) 
+   { 
+    //Okay, so we made a successful call to the database...however there are some different results we need to account for!
+    
+    //If there are no jobs to load, you'll just get a blank array.
+    if(response.length == 0 || response[0].count == 0)
+    {
+      sc.message = "There are no jobs to display at this time."
+      sc.jobsLoaded = -1;
       return;
+    }
+    //If the user is not yet linked to their company...
+    if(response[0].result == "Failed")
+    {
+      sc.message = response[0].message;
+      sc.jobsLoaded = -1;
+      return;
+    }
+    //Otherwise, jobs successfully loaded, we good:
+    sc.jobs = response;
+    sc.jobsLoaded = 1;
+    return;
 
-    },
-     function(response) { sc.message = "Error loading Jobs: " + response.result + " " + response.statusText; sc.jobsLoaded = -1});
+  }, function(response) { sc.message = "Error loading Jobs: " + response.result + " " + response.statusText; sc.jobsLoaded = -1});
   
   
   sc.LoadJob = function()
@@ -233,27 +234,43 @@ angular.module('anguApp')
   sc.PromptDeleteJob = function(_id)
   {
     sc.jobToDelete = _id;
-    ngDialog.open({ template: 'views/confirmDeleteJob.html', scope: sc, className: 'ngdialog-theme-default'}); 
+     ngDialog.open({ template: 'views/confirmDeleteJob.html', scope: sc, className: 'ngdialog-theme-default'}); 
+    // ngDialog.open({ template: 'views/confirmDeleteJob.html', scope: sc}); 
+    //ngDialog.openConfirm({template: '<div><input type="text" ng-model="delData.deleteReason"/></div>', plain:true, scope: sc}); 
   };
   sc.DeleteJob = function()
   {
     if(sc.jobToDelete != null) //Just make sure we got an id before proceeding
     {
       apexFactory.GetJobs().delete({_id:sc.jobToDelete}, function(response) 
-        { 
-          //We removed a company with _id from the database successfully.
-          //Now to remove that row from the table...match it based on _id I guess
-          var count = 0;
-          for(var i = 0; i < sc.jobs.length; i++)
-            if(sc.jobs[i]._id == sc.jobToDelete)
-            {
-              sc.jobs.splice(i, 1); //Surgically remove this single element
-              sc.jobToDelete = null;
-              ngDialog.close();
-              return;
-            }
-        },
-      function(response) { console.log("Failed to delete company: ", response); alert("An error occured and the company wasn't deleted"); });
+      { 
+        //We removed a job with _id from the database successfully.
+        //Now to remove that row from the table...match it based on _id I guess
+        var count = 0;
+        for(var i = 0; i < sc.jobs.length; i++)
+          if(sc.jobs[i]._id == sc.jobToDelete)
+          {
+            sc.jobs.splice(i, 1); //Surgically remove this single element
+            sc.jobToDelete = null;
+            ngDialog.close();
+            return;
+          }
+      },
+      function(response) { console.log("Failed to delete job: ", response); alert("An error occured and the job wasn't deleted"); });
+    }
+  };
+  sc.RequestDeleteJob = function()
+  {
+    if(sc.jobToDelete != null) //Just make sure we got an id before proceeding
+    {
+      //Make sure we send in the reason why we are deleting to the server
+      apexFactory.GetJobs().Request({_id:sc.jobToDelete}, {deleteReason:sc.delData.deleteReason}, function(response) 
+      { 
+        //We submit the request to the admin successfully
+        console.log("response from delete request: ", response);
+        sc.delData.deleteReason = '';
+      },
+      function(response) { console.log("Failed to delete job: ", response); alert("An error occured and the job delete request wasn't submit"); });
     }
   };
 

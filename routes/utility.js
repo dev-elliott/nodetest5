@@ -193,8 +193,8 @@
 			admin.notifications.push({body: bdy});
 			admin.save(function(err, admin){
 				if(err) { console.log("Had an error saving to admin"); return next(err); }
-				else
-					console.log("Successfully notified admin" + admin.username + "for a total of: " + admin.notifications.length);
+				//else
+				//	console.log("Successfully notified admin" + admin.username + "for a total of: " + admin.notifications.length);
 			});
 		
 		});
@@ -208,6 +208,31 @@
 			if(admin)
 			{
 				admin.notifications.push({body: message});
+				admin.save(function(err, admin){
+					if(err) { return next(err); }
+					//else
+					//	console.log("Successfully notified admin for a total of: " + admin.notifications.length);
+				});
+			}
+		});
+	};
+	exports.notifyAdminDeleteRequest = function(obj1, obj2, msg)
+	{
+		//user, job, reasonWhyDeleting
+		Users.findOne({"admin":true})
+		.exec(function (err, admin) {
+
+			if(err) { return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
+			if(admin)
+			{
+				var final;
+				var link1;
+				var link2;
+				if(obj1) link1 = config.baseURL + "#!/detail/" + obj1.id;
+				if(obj2) link2 = config.baseURL + "#!/detail/" + obj2.id;
+				final = '<a href="'+link1+'">'+obj1.username+'</a> has requested to delete job # <a href="'+link2+'">'+obj2.jobNumber+'</a> because: '+msg;
+
+				admin.notifications.push({body: final});
 				admin.save(function(err, admin){
 					if(err) { return next(err); }
 					//else

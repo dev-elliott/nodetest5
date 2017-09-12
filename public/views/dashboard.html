@@ -3,8 +3,6 @@
 <body>
 
   <div class="container-fluid">
-
-
   <md-content>
   <md-tabs md-dynamic-height="" md-border-bottom="">
 
@@ -43,6 +41,7 @@
 
     <md-tab label="Jobs">
       <div ng-controller="JobControl">
+      <div><p>hello here is sc.deleteReason: {{delData.deleteReason}}</p></div>
       <div ng-if="jobsLoaded == -1"><h3>{{message}}</h3></div>
       <div ng-if="jobsLoaded == 0"layout="row" layout-sm="column" layout-align="space-around">
       <md-progress-circular md-mode="indeterminate"></md-progress-circular></div>
@@ -93,7 +92,7 @@
                   <md-tooltip md-direction="right">Full details</md-tooltip>
                   <span ui-sref="app.detail({_id: job._id})" class="glyphicon glyphicon-zoom-in"</span>
                 </button>
-                <button class="btn btn-danger" ng-click="DeleteJob(job._id)">
+                <button class="btn btn-danger" ng-click="PromptDeleteJob(job._id)">
                   <md-tooltip md-direction="right">Delete</md-tooltip>
                   <span class="glyphicon glyphicon-trash"</span>
                 </button>
@@ -225,7 +224,7 @@
                   <md-tooltip md-direction="right">Full details</md-tooltip>
                   <span ui-sref="app.detail({_id: company._id})" class="glyphicon glyphicon-zoom-in"</span>
                 </button>
-                <button class="btn btn-danger" ng-click="PromptDelete(company._id)">
+                <button class="btn btn-danger" ng-click="PromptDeleteCompany(company._id)">
                   <md-tooltip md-direction="right">Delete</md-tooltip>
                   <span class="glyphicon glyphicon-trash"</span>
                 </button>
@@ -237,8 +236,6 @@
       </div>
     </md-tabs>
   </md-content>
-
-
 
 </body>
 </html>

@@ -14,7 +14,6 @@
   //  every time we change tabs?
 //└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 'use strict';
-console.log("anguApp.js loaded ok thanks");
 angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource", 'ngDialog', 'ngAnimate', 'ngSanitize'])
   .run(function(editableOptions) { editableOptions.theme = 'bs3'; } )
   .config(function($stateProvider, $urlRouterProvider, $httpProvider) {
@@ -33,7 +32,6 @@ angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource",
       views: 
         {'content@': {templateUrl: 'views/dashboard.html'/*, controller: 'DataControl'*/}}
     })
-
     .state('app.newjob', {
       url:'newjob',
       views: 
@@ -56,24 +54,31 @@ angular.module('anguApp', ["ngMaterial", "xeditable", "ui.router", "ngResource",
     });
 
     $urlRouterProvider.otherwise('/');
+    //We want to intercept a server response saying our jwt credentials have expired and have the user relogin.
     $httpProvider.interceptors.push(['$q', '$location', '$localStorage', '$rootScope', function($q, $location, $localStorage, $rootScope) {
-      var count = 0;
+      $rootScope.tokenChecked = false;
       return {
           'request': function (config) {
-              //alert("We are intercepting a request cool");
               return config;
           },
           'responseError': function(response) {
-            console.log("intercepting a respnose..", response);
+            //This will proc multiple times when going to the dashboard,
+            //So I want some sort of global variable, which knows if we've already been alerted
+            //and then reset once we relogin
               if(response.data.message == ("tokenexpired")) {
-                  alert("we intercepted a token expired emssage");
+                console.log("we caught an expired token. tokenChecked=", $rootScope.tokenChecked);
+                //If this is the first time we are getting this message, broadcast it
+                if(!$rootScope.tokenChecked)
+                {
+                  console.log("expired for the first time ok");
+
                   $rootScope.$broadcast('token:Expired'); 
-                  count++;
-                  console.log("We have caught it this many times...", count);
+                  $rootScope.tokenChecked = true;
+                }
+
               }
               return $q.reject(response);
           }
       };
    }]);
-})
-;
+});

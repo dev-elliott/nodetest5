@@ -7,11 +7,8 @@
   //
   //  Todo:
   //	-test 'Request-New' notification HTML generation. need to add some to the DB
-  //	-When we confirm the token is expired, we need to let the client know so it can logout
-  //	 and prompt the user to log in again
-  //	-Generate two new functions to help in route verification:
+  //	-Generate new functions to help in route verification:
   //		-confirmEmployee(job, user) determine that the user and job both belong to same company
-  //		-confirmAdmin(user) return true/false if the user ia an admin
   //
 //└───────────────────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -31,13 +28,14 @@
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ VERIFICATION / TOKENS																			//╣ 
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
-	exports.getToken = function(user){
+	exports.getToken = function(user)
+	{
 		//ExpiresIn = amount of seconds
-		//return jwt.sign(user, config.secretKey, {expiresIn: 36000});
-		return jwt.sign(user, config.secretKey, {expiresIn: 15});
+		return jwt.sign(user, config.secretKey, {expiresIn: 36000});
+		// return jwt.sign(user, config.secretKey, {expiresIn: 15});
 	};
-
-	exports.verifyOrdinaryUser = function(req, res, next){
+	exports.verifyOrdinaryUser = function(req, res, next)
+	{
 		//Check header or URL Params or post params for token
 		var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
@@ -87,7 +85,8 @@
 
 	//This function is designed to be called after verifyOrdinaryUser since we are expecting the token to already be 
 	//decoded and saved into the req object
-	exports.verifyAdmin = function(req, res, next){
+	exports.verifyAdmin = function(req, res, next)
+	{
 		if(!req.decoded.admin)
 		{
 			var err = new Error("You are not an admin");
@@ -97,8 +96,8 @@
 		else
 			return next();
 	};
-
-	exports.verifyCompanyOrAdmin = function(req, res, next){
+	exports.verifyCompanyOrAdmin = function(req, res, next)
+	{
 		if(req.decoded.admin)
 		{
 			return next();
@@ -111,7 +110,6 @@
 		err.status = 403;
 		return next(err);
 	};
-
 	exports.confirmEmployee = function(req, res, next)
 	{
 		//employee = req.decoded._id;
@@ -121,72 +119,12 @@
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ NOTIFICATIONS																					//╣ 
 //╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
-	exports.notifyAdminNEW = function(type, obj1, obj2)
-	{
-		console.log("Going to notify admin .......");
-		Users.findOne({admin:true})
-		.exec(function (err, admin) {
-
-			if(err) { return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
-			if(admin)
-			{
-				var bdy = generateNotificationHTML(type, obj1, obj2);
-				//console.log("Here is the body of our notify: ", bdy);
-				admin.notifications.push({body: bdy});
-				admin.save(function(err, admin){
-					if(err) { return next(err); }
-					//else
-					//	console.log("Successfully notified admin for a total of: " + admin.notifications.length);
-				});
-			}
-		});
-	};
-
-	exports.notifyAdmin = function(message)
-	{
-		//console.log("Going to notify admin that " + message);
-		Users.findOne({admin:true})
-		.exec(function (err, admin) {
-
-			if(err) { return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
-			if(admin)
-			{
-				admin.notifications.push({body: message});
-				admin.save(function(err, admin){
-					if(err) { return next(err); }
-					//else
-					//	console.log("Successfully notified admin for a total of: " + admin.notifications.length);
-				});
-			}
-		});
-	};
-
-	exports.notifyUser = function(userId, message)
-	{
-		Users.find({_id:userId})
-		.exec(function (err, user) {
-			if(err) { return next(new Error("ERROR FINDING USER ACCOUNT TO NOTIFY: ", err)); }
-			else if(user)
-			{
-				user.notifications.push({body: message});
-				user.save(function(err, user){
-					if(err) { console.log("ERROR IN SAVING NEW USER NOTIFICATION: ",  err); return next(err); }
-					//else
-					//	console.log("Successfully notified user for a total of: " + user.notifications.length);
-				});
-			}
-		});
-	};
-
-
-	function generateNotificationHTML(type, obj1, obj2)
+	exports.generateNotificationHTML = function(type, obj1, obj2)
 	{
 		var link1;
 		var link2;
-
-		if(obj1) link1 = config.baseURL + "#/detail/" + obj1.id;
-		if(obj2) link2 = config.baseURL + "#/detail/" + obj2.id;
-
+		if(obj1) link1 = config.baseURL + "#!/detail/" + obj1.id;
+		if(obj2) link2 = config.baseURL + "#!/detail/" + obj2.id;
 
 		switch(type)
 		{
@@ -206,10 +144,10 @@
 
 				//If the job has been confirmed by admin (and a number has been generated)
 				//jobNumber defaults to Pending but this catches other non-generated cases to be safe
-				if(obj2.number == "Pending" || obj2.number == null || obj2.number == "")
+				if(obj2.jobNumber == "Pending" || obj2.jobNumber == null || obj2.jobNumber == "")
 					return '<a href="'+link1+'">'+obj1.name+'</a> has modified a <a href="'+link2+'">pending job</a>';
 				else
-					return '<a href="'+link1+'">'+obj1.name+'</a> has modfied job # <a href="'+link2+'">'+obj2.number+'</a>';
+					return '<a href="'+link1+'">'+obj1.name+'</a> has modfied job # <a href="'+link2+'">'+obj2.jobNumber+'</a>';
 			break;
 			
 			case('User-New'):
@@ -245,8 +183,81 @@
 				return '<a href="'+link1+'">'+obj1.firstname+' '+obj1.lastname+'</a> has commented on job # <a href="'+link2+'">'+obj2.number+'</a>';
 			break;
 		}
-	}
+	};
+	exports.notifyAdmin = function(type, obj1, obj2)
+	{
+		Users.findOne({"admin":true}).exec(function (err, admin) {
+			if(err || !admin) {return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
 
+			var bdy = exports.generateNotificationHTML(type, obj1, obj2);
+			admin.notifications.push({body: bdy});
+			admin.save(function(err, admin){
+				if(err) { console.log("Had an error saving to admin"); return next(err); }
+				//else
+				//	console.log("Successfully notified admin" + admin.username + "for a total of: " + admin.notifications.length);
+			});
+		
+		});
+	};
+	exports.notifyAdminMessage = function(message)
+	{
+		Users.findOne({"admin":true})
+		.exec(function (err, admin) {
+
+			if(err) { return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
+			if(admin)
+			{
+				admin.notifications.push({body: message});
+				admin.save(function(err, admin){
+					if(err) { return next(err); }
+					//else
+					//	console.log("Successfully notified admin for a total of: " + admin.notifications.length);
+				});
+			}
+		});
+	};
+	exports.notifyAdminDeleteRequest = function(obj1, obj2, msg)
+	{
+		//user, job, reasonWhyDeleting
+		Users.findOne({"admin":true})
+		.exec(function (err, admin) {
+
+			if(err) { return next(new Error("ERROR FINDING ADMIN ACCOUNT TO NOTIFY: ", err)); }
+			if(admin)
+			{
+				var final;
+				var link1;
+				var link2;
+				if(obj1) link1 = config.baseURL + "#!/detail/" + obj1.id;
+				if(obj2) link2 = config.baseURL + "#!/detail/" + obj2.id;
+				final = '<a href="'+link1+'">'+obj1.username+'</a> has requested to delete job # <a href="'+link2+'">'+obj2.jobNumber+'</a> because: '+msg;
+
+				admin.notifications.push({body: final});
+				admin.save(function(err, admin){
+					if(err) { return next(err); }
+					//else
+					//	console.log("Successfully notified admin for a total of: " + admin.notifications.length);
+				});
+			}
+		});
+	};
+	exports.notifyUser = function(userId, message)
+	{
+		Users.find({_id:userId})
+		.exec(function (err, user) {
+			if(err) { return next(new Error("ERROR FINDING USER ACCOUNT TO NOTIFY: ", err)); }
+			else if(user)
+			{
+				user.notifications.push({body: message});
+				user.save(function(err, user){
+					if(err) { console.log("ERROR IN SAVING NEW USER NOTIFICATION: ",  err); return next(err); }
+					//else
+					//	console.log("Successfully notified user for a total of: " + user.notifications.length);
+				});
+			}
+		});
+	};
+	
 
 //╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 //╠ UTILITY FUNCS																					//╣ 
@@ -288,9 +299,8 @@
 				addEmployee(newCompanyId, userId);
 			}
 		}
-	}
-
-	function addEmployee(companyId, userId)
+	};
+	exports.addEmployee = function(companyId, userId)
 	{
 		//Each company knows who it's employees are; we call this function when we (the admin)
 		//sets the users company (ID) from the Dashboard:Users
@@ -329,7 +339,7 @@
 
 			});
 	};	
-	function removeEmployee(companyId, userId)
+	exports.removeEmployee = function(companyId, userId)
 	{
 		//Each company knows who it's employees are; we call this function when we (the admin)
 		//change the users company (ID) from the Dashboard:Users

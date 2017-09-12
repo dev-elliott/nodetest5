@@ -1,0 +1,26 @@
+<div class="ngdialog-message">
+    <div ng-if="isAdmin">
+        <div class=""><h3>Are you really certain?</h3></div>
+        <form ng-submit="DeleteJob()">
+            <div class="form-group"><p>Deleting a job cannot be undone!</p></br></div>
+            <button type="submit" class="btn btn-info btn-sm">I know what I'm doing, man.</button>
+            <button type="button" class="btn btn-default btn-sm" ng-click=closeThisDialog("Cancel")>Nevermind.</button> &nbsp; &nbsp;
+        </form>
+        </div>
+    </div>
+
+    <div ng-if="isAdmin === false">
+        <div class=""><h3>Are you really certain?</h3></div>
+        <form ng-submit="RequestDeleteJob()">
+            <div class="form-group">
+                <p>Only the administrator can delete a job. Please include a reason why you want this job removed from the board.</p></br>
+                <input type="text" class="form-control" id="deleteReason" name="deleteReason" placeholder="i.e. duplicate of job 17-2543" ng-model="delData.deleteReason" required>
+            </div>
+            <button type="submit" class="btn btn-info btn-sm">Submit request</button>
+            <button type="button" class="btn btn-default btn-sm" ng-click=closeThisDialog("Cancel")>Nevermind.</button> &nbsp; &nbsp;
+
+            <p>scope.deleteReason={{delData.deleteReason}}</p>
+        </form>
+        </div>
+    </div>
+</div>

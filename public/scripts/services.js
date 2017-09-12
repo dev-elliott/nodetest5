@@ -17,7 +17,7 @@
   //  Todo:
   //    -AuthFactory needs to encrypt your credentials prior to localstorage save ("remember me?")
 //└───────────────────────────────────────────────────────────────────────────────────────────────────┘
-console.log("services.js loaded ok thanks");
+
 angular.module('anguApp')
 .constant("baseURL", "http://localhost:8080/")
 //To use factories or services....?
@@ -25,60 +25,37 @@ angular.module('anguApp')
 //or to have jobFac, userFac, companyFac, etc
 .factory('apexFactory', ['$resource', 'baseURL', function($resource, baseURL)
 {
-	console.log('apex factory made');
 	var apexFac = {};
 
   apexFac.GetTestData = function()
   {
     return $resource(baseURL + "data/test", null, null);
   }
-
   apexFac.GetUnclaimedUsers = function()
   {
     return $resource(baseURL + "users/unclaimed", null, null);
   }
-  apexFac.GetNotifications = function()
-  {
+  apexFac.GetNotifications = function() {
     //Returns an array of notifications
     //If there are none, we get:
       //response[0] = {count: 0}
       //response[1] = {type: "Success"}
     return $resource(baseURL + "users/notifications", null, {'Delete':{method:'DELETE'}});
   }
-	apexFac.GetUsers = function()
-	{
+	apexFac.GetUsers = function()	{
     return $resource(baseURL + "users/:_id", null, {'Update':{method:'PUT'}});
 	}
-
-  apexFac.GetDetails = function()
-  {
+  apexFac.GetDetails = function() {
     return $resource(baseURL + "data/details/:_id", null, {'Update':{method:'PUT'}});
   }
-
-	apexFac.GetJobs = function()
-	{
-		return $resource(baseURL + "jobs/:_id", null, {'Update':{method:'PUT'}, 'Save':{method:'POST'}, 'Delete':{method:'DELETE'}});
+	apexFac.GetJobs = function() {
+		return $resource(baseURL + "jobs/:_id", null, {'Update':{method:'PUT'}, 'Save':{method:'POST'}, 'Delete':{method:'DELETE'}, 'Request':{method:'POST'}});
   }
-
-	apexFac.GetCompanies = function()
-	{
+	apexFac.GetCompanies = function()	{
 		return $resource(baseURL + "companies/:_id", null, {'Update':{method:'PUT'}, 'Save':{method:'POST'}, 'Delete':{method:'DELETE'}});
 	}
-  apexFac.GetCompanyNames = function()
-  {
+  apexFac.GetCompanyNames = function() {
     return $resource(baseURL + "companiesnames", null, null);
-  }
-
-  function CheckForExpiredToken(res)
-  {
-    console.log("checking");
-    console.log(res);
-    if(res.message == "tokenexpired")
-    {
-      console.log("Server is telling us your token is expired. Broadcasting this message!!");
-      //Alert the controllers (headercontrol) that we expired. let them try and login with userinfo token or just logout
-      $rootScope.$broadcast('token:Expired'); 
-    }
   }
 	return apexFac;
 }])
@@ -151,9 +128,9 @@ angular.module('anguApp')
 	{
     //Credentials is an object with a username (the login name, aka email for a user)
     //and the token, from local storage (which gets created after login)
-                                                //console.log("caller of UseCredentials is " + arguments.callee.caller.name.toString());
-                                                //console.log("HEY: here are our credentials data");
-                                                //console.log(credentials);
+        //console.log("caller of UseCredentials is " + arguments.callee.caller.name.toString());
+        //console.log("HEY: here are our credentials data");
+        //console.log(credentials);
 
 		authToken = credentials.token;  //Save the actual token into our variable
     //Proceed to parse the token, and save that back into credentials
@@ -161,8 +138,8 @@ angular.module('anguApp')
     var base64 = base64Url.replace('-', '+').replace('_', '/');
     credentials = JSON.parse($window.atob(base64));
     //credentials now holds the "payload" of the token
-                                                //console.log("OK: Here it is, parsed:");
-                                                //console.log(credentials);
+        //console.log("OK: Here it is, parsed:");
+        //console.log(credentials);
 
     //Apparently we are authenticated (??? honestly not sure what this is for yet)
     isAuthenticated = true;
@@ -199,9 +176,9 @@ angular.module('anguApp')
         $resource(baseURL + "auth/login")
         .save(loginData,
            function(response) {
-                                //console.log("Successful login, here is the response:");
-                                //console.log(response);
-                                //console.log(response.token);
+                  //console.log("Successful login, here is the response:");
+                  //console.log(response);
+                  //console.log(response.token);
               //We successfully logged in according to the server.
               //Lets save the token along with our login name (email) into local storage
               //Not sure why we need to keep the username, but ... there it is.
@@ -278,7 +255,6 @@ angular.module('anguApp')
     
     //This will extract the payload from our JWT token.
     //Not sure why this needs to be a public service function???
-    //Gotta see where else this is being called and nip that in the anus
     authFac.ParseJwt = function() {
         var base64Url = authToken.split('.')[1];
         var base64 = base64Url.replace('-', '+').replace('_', '/');
